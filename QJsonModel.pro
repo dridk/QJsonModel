@@ -13,8 +13,15 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    jsonitem.cpp \
+    qjsonmodel.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    jsonitem.h \
+    qjsonmodel.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    resource.qrc

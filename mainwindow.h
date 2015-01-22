@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <QJsonDocument>
+#include <QJsonObject>
 namespace Ui {
 class MainWindow;
 }
@@ -17,6 +18,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QJsonDocument mDocument;
 };
 
 #endif // MAINWINDOW_H
