@@ -12,6 +12,7 @@ public:
     explicit QJsonModel(QObject *parent = 0);
     bool load(const QString& fileName);
     bool load(QIODevice * device);
+    bool loadJson(const QByteArray& json);
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     QModelIndex index(int row, int column,const QModelIndex &parent = QModelIndex()) const;
@@ -20,10 +21,12 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
 
+
 private:
     QJsonTreeItem * mRootItem;
     QJsonDocument mDocument;
     QStringList mHeaders;
+    QHash<QJsonValue::Type, QString> mTypeIcons;
 
 
 };

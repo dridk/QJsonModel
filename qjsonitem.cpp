@@ -52,6 +52,11 @@ void QJsonTreeItem::setValue(const QString &value)
     mValue = value;
 }
 
+void QJsonTreeItem::setType(const QJsonValue::Type &type)
+{
+    mType = type;
+}
+
 QString QJsonTreeItem::key() const
 {
     return mKey;
@@ -60,6 +65,11 @@ QString QJsonTreeItem::key() const
 QString QJsonTreeItem::value() const
 {
     return mValue;
+}
+
+QJsonValue::Type QJsonTreeItem::type() const
+{
+    return mType;
 }
 
 QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* parent)
@@ -74,10 +84,10 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
 
         //Get all QJsonValue childs
         foreach (QString key , value.toObject().keys()){
-
             QJsonValue v = value.toObject().value(key);
             QJsonTreeItem * child = load(v,rootItem);
             child->setKey(key);
+            child->setType(v.type());
             rootItem->appendChild(child);
 
         }
@@ -91,28 +101,18 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
         foreach (QJsonValue v , value.toArray()){
 
             QJsonTreeItem * child = load(v,rootItem);
-
             child->setKey(QString::number(index));
-
+            child->setType(v.type());
             rootItem->appendChild(child);
-
             ++index;
-
         }
-
     }
-
     else
     {
-
-        qDebug()<<value;
         rootItem->setValue(value.toVariant().toString());
-
+        rootItem->setType(value.type());
     }
 
     return rootItem;
-
-
-
 }
 

@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QIcon>
+#include <QFont>
 
 QJsonModel::QJsonModel(QObject *parent) :
     QAbstractItemModel(parent)
@@ -10,6 +12,14 @@ QJsonModel::QJsonModel(QObject *parent) :
     mRootItem = new QJsonTreeItem;
     mHeaders.append("key");
     mHeaders.append("value");
+
+
+    mTypeIcons.insert(QJsonValue::Bool, ":/icons/bullet_black.png");
+    mTypeIcons.insert(QJsonValue::Double, ":/icons/bullet_red.png");
+    mTypeIcons.insert(QJsonValue::String, ":/icons/bullet_blue.png");
+    mTypeIcons.insert(QJsonValue::Array, ":/icons/table.png");
+    mTypeIcons.insert(QJsonValue::Object, ":/icons/brick.png");
+
 }
 
 bool QJsonModel::load(const QString &fileName)
@@ -18,6 +28,7 @@ bool QJsonModel::load(const QString &fileName)
     bool success = false;
     if (file.open(QIODevice::ReadOnly)) {
         success = load(&file);
+        file.close();
     }
     else success = false;
 
@@ -26,17 +37,21 @@ bool QJsonModel::load(const QString &fileName)
 
 bool QJsonModel::load(QIODevice *device)
 {
-    bool success = false;
-    mDocument = QJsonDocument::fromJson(device->readAll());
-    if (!mDocument.isNull()){
+    return loadJson(device->readAll());
+}
+
+bool QJsonModel::loadJson(const QByteArray &json)
+{
+    mDocument = QJsonDocument::fromJson(json);
+
+    if (!mDocument.isNull())
+    {
         beginResetModel();
         mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.object()));
         endResetModel();
-        success = true;
+        return true;
     }
-    else success = false;
-
-    return success;
+    return false;
 }
 
 
@@ -46,16 +61,28 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
 
     QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
 
-   if (index.column() == 0)
-           return QString("%1").arg(item->key());
 
-   if (index.column() == 1)
-           return QString("%1").arg(item->value());
+    if ((role == Qt::DecorationRole) && (index.column() == 0)){
+
+        return QIcon(mTypeIcons.value(item->type()));
+    }
+
+
+    if (role == Qt::DisplayRole) {
+
+        if (index.column() == 0)
+            return QString("%1").arg(item->key());
+
+        if (index.column() == 1)
+            return QString("%1").arg(item->value());
+    }
+
+
+
+    return QVariant();
 
 }
 

@@ -19,6 +19,7 @@ public:
 
 public slots:
     void openFile();
+    void tabChanged(int index);
 
 private:
     Ui::MainWindow *ui;
