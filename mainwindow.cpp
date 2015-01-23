@@ -2,7 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QFile>
 #include <QDebug>
-#include "jsonitem.h"
+#include <QFileDialog>
+#include "qjsonitem.h"
 #include "qjsonmodel.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -10,13 +11,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    mModel= new QJsonModel;
 
+    ui->treeView->setModel(mModel);
 
+    mModel->load("/home/sacha/test.json");
 
-    QJsonModel * model = new QJsonModel;
-
-    ui->treeView->setModel(model);
-
+    connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(openFile()));
 
 
 }
@@ -24,4 +25,14 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::openFile()
+{
+
+    QString filename = QFileDialog::getOpenFileName(this,tr("Open Json file"),"",tr("Json file (*.json)"));
+    mModel->load(filename);
+
+
+
 }

@@ -4,23 +4,22 @@
 #include <QJsonValue>
 #include <QJsonArray>
 #include <QJsonObject>
-class JsonItem
+class QJsonTreeItem
 {
 public:
-    JsonItem(JsonItem * parent = 0);
-    ~JsonItem();
-    void appendChild(JsonItem * item);
-    JsonItem *child(int row);
-    JsonItem *parent();
+    QJsonTreeItem(QJsonTreeItem * parent = 0);
+    ~QJsonTreeItem();
+    void appendChild(QJsonTreeItem * item);
+    QJsonTreeItem *child(int row);
+    QJsonTreeItem *parent();
     int childCount() const;
     int row() const;
     void setKey(const QString& key);
     void setValue(const QString& value);
-
     QString key() const;
     QString value() const;
 
-    static JsonItem* load(const QJsonValue& value, JsonItem * parent = 0);
+    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem * parent = 0);
 
 protected:
 
@@ -30,8 +29,8 @@ private:
     QString mValue;
     QJsonValue::Type mType;
 
-    QList<JsonItem*> mChilds;
-    JsonItem * mParent;
+    QList<QJsonTreeItem*> mChilds;
+    QJsonTreeItem * mParent;
 
 
 };

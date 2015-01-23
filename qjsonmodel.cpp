@@ -7,29 +7,69 @@
 QJsonModel::QJsonModel(QObject *parent) :
     QAbstractItemModel(parent)
 {
-
-    QFile file("/Users/sacha/example.json");
-
-    file.open(QIODevice::ReadOnly);
-    mDocument = QJsonDocument::fromJson(file.readAll());
-
-    mRootItem = JsonItem::load(QJsonValue(mDocument.object()));
-
+    mRootItem = new QJsonTreeItem;
+    mHeaders.append("key");
+    mHeaders.append("value");
 }
+
+bool QJsonModel::load(const QString &fileName)
+{
+    QFile file(fileName);
+    bool success = false;
+    if (file.open(QIODevice::ReadOnly)) {
+        success = load(&file);
+    }
+    else success = false;
+
+    return success;
+}
+
+bool QJsonModel::load(QIODevice *device)
+{
+    bool success = false;
+    mDocument = QJsonDocument::fromJson(device->readAll());
+    if (!mDocument.isNull()){
+        beginResetModel();
+        mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.object()));
+        endResetModel();
+        success = true;
+    }
+    else success = false;
+
+    return success;
+}
+
 
 QVariant QJsonModel::data(const QModelIndex &index, int role) const
 {
 
     if (!index.isValid())
-           return QVariant();
+        return QVariant();
 
-       if (role != Qt::DisplayRole)
-           return QVariant();
+    if (role != Qt::DisplayRole)
+        return QVariant();
 
-       JsonItem *item = static_cast<JsonItem*>(index.internalPointer());
+    QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
 
-       return QString("%1:%2").arg(item->key()).arg(item->value());
+   if (index.column() == 0)
+           return QString("%1").arg(item->key());
 
+   if (index.column() == 1)
+           return QString("%1").arg(item->value());
+
+}
+
+QVariant QJsonModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role != Qt::DisplayRole)
+        return QVariant();
+
+    if (orientation == Qt::Horizontal) {
+
+        return mHeaders.value(section);
+    }
+    else
+        return QVariant();
 }
 
 QModelIndex QJsonModel::index(int row, int column, const QModelIndex &parent) const
@@ -37,14 +77,14 @@ QModelIndex QJsonModel::index(int row, int column, const QModelIndex &parent) co
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    JsonItem *parentItem;
+    QJsonTreeItem *parentItem;
 
     if (!parent.isValid())
         parentItem = mRootItem;
     else
-        parentItem = static_cast<JsonItem*>(parent.internalPointer());
+        parentItem = static_cast<QJsonTreeItem*>(parent.internalPointer());
 
-    JsonItem *childItem = parentItem->child(row);
+    QJsonTreeItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
@@ -54,32 +94,32 @@ QModelIndex QJsonModel::index(int row, int column, const QModelIndex &parent) co
 QModelIndex QJsonModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-          return QModelIndex();
+        return QModelIndex();
 
-      JsonItem *childItem = static_cast<JsonItem*>(index.internalPointer());
-      JsonItem *parentItem = childItem->parent();
+    QJsonTreeItem *childItem = static_cast<QJsonTreeItem*>(index.internalPointer());
+    QJsonTreeItem *parentItem = childItem->parent();
 
-      if (parentItem == mRootItem)
-          return QModelIndex();
+    if (parentItem == mRootItem)
+        return QModelIndex();
 
-      return createIndex(parentItem->row(), 0, parentItem);
+    return createIndex(parentItem->row(), 0, parentItem);
 }
 
 int QJsonModel::rowCount(const QModelIndex &parent) const
 {
-    JsonItem *parentItem;
-       if (parent.column() > 0)
-           return 0;
+    QJsonTreeItem *parentItem;
+    if (parent.column() > 0)
+        return 0;
 
-       if (!parent.isValid())
-           parentItem = mRootItem;
-       else
-           parentItem = static_cast<JsonItem*>(parent.internalPointer());
+    if (!parent.isValid())
+        parentItem = mRootItem;
+    else
+        parentItem = static_cast<QJsonTreeItem*>(parent.internalPointer());
 
-       return parentItem->childCount();
+    return parentItem->childCount();
 }
 
 int QJsonModel::columnCount(const QModelIndex &parent) const
 {
-    return 1;
+    return 2;
 }

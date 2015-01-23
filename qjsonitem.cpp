@@ -1,6 +1,6 @@
-#include "jsonitem.h"
+#include "qjsonitem.h"
 
-JsonItem::JsonItem(JsonItem *parent)
+QJsonTreeItem::QJsonTreeItem(QJsonTreeItem *parent)
 {
 
     mParent = parent;
@@ -8,65 +8,65 @@ JsonItem::JsonItem(JsonItem *parent)
 
 }
 
-JsonItem::~JsonItem()
+QJsonTreeItem::~QJsonTreeItem()
 {
     qDeleteAll(mChilds);
 
 }
 
-void JsonItem::appendChild(JsonItem *item)
+void QJsonTreeItem::appendChild(QJsonTreeItem *item)
 {
     mChilds.append(item);
 }
 
-JsonItem *JsonItem::child(int row)
+QJsonTreeItem *QJsonTreeItem::child(int row)
 {
     return mChilds.value(row);
 }
 
-JsonItem *JsonItem::parent()
+QJsonTreeItem *QJsonTreeItem::parent()
 {
     return mParent;
 }
 
-int JsonItem::childCount() const
+int QJsonTreeItem::childCount() const
 {
     return mChilds.count();
 }
 
-int JsonItem::row() const
+int QJsonTreeItem::row() const
 {
     if (mParent)
-        return mParent->mChilds.indexOf(const_cast<JsonItem*>(this));
+        return mParent->mChilds.indexOf(const_cast<QJsonTreeItem*>(this));
 
     return 0;
 }
 
-void JsonItem::setKey(const QString &key)
+void QJsonTreeItem::setKey(const QString &key)
 {
     mKey = key;
 }
 
-void JsonItem::setValue(const QString &value)
+void QJsonTreeItem::setValue(const QString &value)
 {
     mValue = value;
 }
 
-QString JsonItem::key() const
+QString QJsonTreeItem::key() const
 {
     return mKey;
 }
 
-QString JsonItem::value() const
+QString QJsonTreeItem::value() const
 {
     return mValue;
 }
 
-JsonItem* JsonItem::load(const QJsonValue& value, JsonItem* parent)
+QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* parent)
 {
 
 
-    JsonItem * rootItem = new JsonItem(parent);
+    QJsonTreeItem * rootItem = new QJsonTreeItem(parent);
     rootItem->setKey("root");
 
     if ( value.isObject())
@@ -76,7 +76,7 @@ JsonItem* JsonItem::load(const QJsonValue& value, JsonItem* parent)
         foreach (QString key , value.toObject().keys()){
 
             QJsonValue v = value.toObject().value(key);
-            JsonItem * child = load(v,rootItem);
+            QJsonTreeItem * child = load(v,rootItem);
             child->setKey(key);
             rootItem->appendChild(child);
 
@@ -90,7 +90,7 @@ JsonItem* JsonItem::load(const QJsonValue& value, JsonItem* parent)
         int index = 0;
         foreach (QJsonValue v , value.toArray()){
 
-            JsonItem * child = load(v,rootItem);
+            QJsonTreeItem * child = load(v,rootItem);
 
             child->setKey(QString::number(index));
 

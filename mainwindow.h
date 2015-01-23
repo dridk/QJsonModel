@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include "qjsonmodel.h"
 namespace Ui {
 class MainWindow;
 }
@@ -16,9 +17,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void openFile();
+
 private:
     Ui::MainWindow *ui;
     QJsonDocument mDocument;
+    QJsonModel * mModel;
 };
 
 #endif // MAINWINDOW_H
