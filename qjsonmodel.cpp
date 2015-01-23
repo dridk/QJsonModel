@@ -33,12 +33,6 @@ QJsonModel::QJsonModel(QObject *parent) :
     mHeaders.append("value");
 
 
-    mTypeIcons.insert(QJsonValue::Bool, ":/icons/bullet_black.png");
-    mTypeIcons.insert(QJsonValue::Double, ":/icons/bullet_red.png");
-    mTypeIcons.insert(QJsonValue::String, ":/icons/bullet_blue.png");
-    mTypeIcons.insert(QJsonValue::Array, ":/icons/table.png");
-    mTypeIcons.insert(QJsonValue::Object, ":/icons/brick.png");
-
 }
 
 bool QJsonModel::load(const QString &fileName)
@@ -86,7 +80,7 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
 
     if ((role == Qt::DecorationRole) && (index.column() == 0)){
 
-        return QIcon(mTypeIcons.value(item->type()));
+        return mTypeIcons.value(item->type());
     }
 
 
@@ -169,4 +163,9 @@ int QJsonModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return 2;
+}
+
+void QJsonModel::setIcon(const QJsonValue::Type &type, const QIcon &icon)
+{
+    mTypeIcons.insert(type,icon);
 }

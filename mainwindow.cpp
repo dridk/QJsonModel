@@ -38,6 +38,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(openFile()));
     connect(ui->tabWidget,SIGNAL(tabBarClicked(int)),this,SLOT(tabChanged(int)));
 
+
+    mModel->setIcon(QJsonValue::Bool, QIcon(":/icons/bullet_black.png"));
+    mModel->setIcon(QJsonValue::Double, QIcon(":/icons/bullet_red.png"));
+    mModel->setIcon(QJsonValue::String, QIcon(":/icons/bullet_blue.png"));
+    mModel->setIcon(QJsonValue::Array, QIcon(":/icons/table.png"));
+    mModel->setIcon(QJsonValue::Object, QIcon(":/icons/brick.png"));
+
+
 }
 
 MainWindow::~MainWindow()

@@ -5,6 +5,7 @@
 #include "qjsonitem.h"
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QIcon>
 class QJsonModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -19,6 +20,7 @@ public:
     QModelIndex parent(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    void setIcon(const QJsonValue::Type& type, const QIcon& icon);
 
 
 
@@ -26,7 +28,7 @@ private:
     QJsonTreeItem * mRootItem;
     QJsonDocument mDocument;
     QStringList mHeaders;
-    QHash<QJsonValue::Type, QString> mTypeIcons;
+    QHash<QJsonValue::Type, QIcon> mTypeIcons;
 
 
 };
