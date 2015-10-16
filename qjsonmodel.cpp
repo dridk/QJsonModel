@@ -60,7 +60,11 @@ bool QJsonModel::loadJson(const QByteArray &json)
     if (!mDocument.isNull())
     {
         beginResetModel();
-        mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.object()));
+        if (mDocument.isArray()) {
+            mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.array()));
+        } else {
+            mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.object()));
+        }
         endResetModel();
         return true;
     }
