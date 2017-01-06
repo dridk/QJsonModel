@@ -5,7 +5,7 @@ QJsonModel is under MIT License.
 ![QJsonModel](https://raw.githubusercontent.com/dridk/QJsonmodel/master/screen.png)
 
 ## Installation 
-Add QJsonModel.cpp and QJsonModel.h into your project. 
+Add qjsonmodel.cpp and qjsonmodel.h into your project. 
 
 ## Usage 
 
