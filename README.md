@@ -1,4 +1,4 @@
-# QJsonmodel
+# QJsonModel
 QJsonModel is a json tree model class for Qt5/C++11.
 QJsonModel is under MIT License. 
 
