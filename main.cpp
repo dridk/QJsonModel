@@ -17,14 +17,49 @@
 
 **********************************************/
 
-#include "mainwindow.h"
 #include <QApplication>
+#include <QTreeView>
+#include <QFile>
+#include <string>
+#include "qjsonmodel.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+
+    QTreeView * view   = new QTreeView;
+    QJsonModel * model = new QJsonModel;
+
+    view->setModel(model);
+
+    std::string json = R"({
+                       "firstName": "John",
+                       "lastName": "Smith",
+                       "age": 25,
+                       "address":
+                       {
+                           "streetAddress": "21 2nd Street",
+                           "city": "New York",
+                           "state": "NY",
+                           "postalCode": "10021"
+                       },
+                       "phoneNumber":
+                       [
+                           {
+                             "type": "home",
+                             "number": "212 555-1234"
+                           },
+                           {
+                             "type": "fax",
+                             "number": "646 555-4567"
+                           }
+                       ]
+                   })";
+
+
+
+    model->loadJson(QByteArray::fromStdString(json));
+    view->show();
 
     return a.exec();
 }

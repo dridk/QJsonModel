@@ -11,17 +11,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = QJsonModel
 TEMPLATE = app
 
+SOURCES += \
+    main.cpp \
+    qjsonmodel.cpp
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    qjsonmodel.cpp \
-    qjsonitem.cpp
+HEADERS += \
+    qjsonmodel.h
 
-HEADERS  += mainwindow.h \
-    qjsonmodel.h \
-    qjsonitem.h
 
-FORMS    += mainwindow.ui
 
-RESOURCES += \
-    resource.qrc
+
