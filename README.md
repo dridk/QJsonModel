@@ -1,5 +1,5 @@
 # QJsonModel
-QJsonModel is a json tree model class for Qt5/C++11.
+QJsonModel is a json tree model class for Qt5/C++11 based on QAbstractItemModel.
 QJsonModel is under MIT License. 
 
 ![QJsonModel](https://raw.githubusercontent.com/dridk/QJsonmodel/master/screen.png)
