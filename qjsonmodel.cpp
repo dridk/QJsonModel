@@ -152,6 +152,11 @@ QJsonModel::QJsonModel(QObject *parent) :
 
 }
 
+QJsonModel::~QJsonModel()
+{
+    delete mRootItem;
+}
+
 bool QJsonModel::load(const QString &fileName)
 {
     QFile file(fileName);
@@ -177,6 +182,7 @@ bool QJsonModel::loadJson(const QByteArray &json)
     if (!mDocument.isNull())
     {
         beginResetModel();
+        delete mRootItem;
         if (mDocument.isArray()) {
             mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.array()));
         } else {
