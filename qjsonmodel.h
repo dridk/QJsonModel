@@ -1,4 +1,4 @@
-/*
+﻿/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2011 SCHUTZ Sacha
@@ -38,7 +38,7 @@ class QJsonItem;
 class QJsonTreeItem
 {
 public:
-    QJsonTreeItem(QJsonTreeItem * parent = 0);
+    QJsonTreeItem(QJsonTreeItem *parent = 0);
     ~QJsonTreeItem();
     void appendChild(QJsonTreeItem * item);
     QJsonTreeItem *child(int row);
@@ -52,23 +52,15 @@ public:
     QString value() const;
     QJsonValue::Type type() const;
 
-
-    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem * parent = 0);
-
-protected:
-
+    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem *parent = 0);
 
 private:
-    QString mKey;
-    QString mValue;
-    QJsonValue::Type mType;
-    QList<QJsonTreeItem*> mChilds;
-    QJsonTreeItem * mParent;
-
-
+    QString m_key;
+    QString m_value;
+    QJsonValue::Type m_type;
+    QList<QJsonTreeItem*> m_childs;
+    QJsonTreeItem * m_parent;
 };
-
-//---------------------------------------------------
 
 class QJsonModel : public QAbstractItemModel
 {
@@ -77,7 +69,7 @@ public:
     explicit QJsonModel(QObject *parent = 0);
     ~QJsonModel();
     bool load(const QString& fileName);
-    bool load(QIODevice * device);
+    bool load(QIODevice *device);
     bool loadJson(const QByteArray& json);
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
@@ -87,11 +79,9 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 
 private:
-    QJsonTreeItem * mRootItem;
-    QJsonDocument mDocument;
-    QStringList mHeaders;
-
-
+    QJsonTreeItem *m_rootItem;
+    QJsonDocument m_document;
+    QStringList m_headers;
 };
 
 #endif // QJSONMODEL_H
