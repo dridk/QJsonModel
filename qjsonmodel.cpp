@@ -183,8 +183,11 @@ bool QJsonModel::loadJson(const QByteArray &json)
         delete mRootItem;
         if (jdoc.isArray()) {
             mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.array()));
+            mRootItem->setType(QJsonValue::Array);
+
         } else {
             mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.object()));
+            mRootItem->setType(QJsonValue::Object);
         }
         endResetModel();
         return true;
@@ -317,3 +320,44 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     }
 }
 
+QJsonDocument QJsonModel::json() const
+{
+
+    auto v = genJson(mRootItem);
+    QJsonDocument doc;
+
+    if (v.isObject()) {
+        doc = QJsonDocument(v.toObject());
+    } else {
+        doc = QJsonDocument(v.toArray());
+    }
+
+    return doc;
+}
+
+QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
+{
+    auto type   = item->type();
+    int  nchild = item->childCount();
+
+    if (QJsonValue::Object == type) {
+        QJsonObject jo;
+        for (int i = 0; i < nchild; ++i) {
+            auto ch = item->child(i);
+            auto key = ch->key();
+            jo.insert(key, genJson(ch));
+        }
+        return  jo;
+    } else if (QJsonValue::Array == type) {
+        QJsonArray arr;
+        for (int i = 0; i < nchild; ++i) {
+            auto ch = item->child(i);
+            arr.append(genJson(ch));
+        }
+        return arr;
+    } else {
+        QJsonValue va(item->value());
+        return va;
+    }
+
+}
