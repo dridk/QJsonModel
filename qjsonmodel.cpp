@@ -175,16 +175,16 @@ bool QJsonModel::load(QIODevice *device)
 
 bool QJsonModel::loadJson(const QByteArray &json)
 {
-    mDocument = QJsonDocument::fromJson(json);
+    auto const& jdoc = QJsonDocument::fromJson(json);
 
-    if (!mDocument.isNull())
+    if (!jdoc.isNull())
     {
         beginResetModel();
         delete mRootItem;
-        if (mDocument.isArray()) {
-            mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.array()));
+        if (jdoc.isArray()) {
+            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.array()));
         } else {
-            mRootItem = QJsonTreeItem::load(QJsonValue(mDocument.object()));
+            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.object()));
         }
         endResetModel();
         return true;

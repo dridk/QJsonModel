@@ -90,7 +90,6 @@ public:
 
 private:
     QJsonTreeItem * mRootItem;
-    QJsonDocument mDocument;
     QStringList mHeaders;
 
 
