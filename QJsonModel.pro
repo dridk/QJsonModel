@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui widgets
+CONFIG   += c++11
+lessThan(QT_MAJOR_VERSION, 5): error("requires Qt 5")
 
 TARGET = QJsonModel
 TEMPLATE = app
