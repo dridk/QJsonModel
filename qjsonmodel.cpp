@@ -98,8 +98,6 @@ QJsonValue::Type QJsonTreeItem::type() const
 
 QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* parent)
 {
-
-
     QJsonTreeItem * rootItem = new QJsonTreeItem(parent);
     rootItem->setKey("root");
 
@@ -214,6 +212,10 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
 
         if (index.column() == 1)
             return QString("%1").arg(item->value());
+    } else if (Qt::EditRole == role) {
+        if (index.column() == 1) {
+            return QString("%1").arg(item->value());
+        }
     }
 
 
@@ -221,6 +223,23 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
     return QVariant();
 
 }
+
+bool QJsonModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    int col = index.column();
+    if (Qt::EditRole == role) {
+        if (col == 1) {
+            QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
+                item->setValue(value.toString());
+                emit dataChanged(index, index, {Qt::EditRole});
+                return true;
+        }
+    }
+
+    return false;
+}
+
+
 
 QVariant QJsonModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -286,5 +305,15 @@ int QJsonModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return 2;
+}
+
+Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
+{
+    int col = index.column();
+    if (col == 1) {
+        return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+    } else {
+        return QAbstractItemModel::flags(index);
+    }
 }
 
