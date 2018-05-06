@@ -1,15 +1,32 @@
 # QJsonModel
-QJsonModel is a json tree model class for Qt5/C++11 based on QAbstractItemModel.
+QJsonModel is a json tree model class for Qt5/C++11/Python based on QAbstractItemModel.
 QJsonModel is under MIT License. 
 
 ![QJsonModel](https://raw.githubusercontent.com/dridk/QJsonmodel/master/screen.png)
 
-## Installation 
-Add qjsonmodel.cpp and qjsonmodel.h into your project. 
+## Usage C++
 
-## Usage 
+Add `qjsonmodel.cpp` and `qjsonmodel.h` into your project. 
 
-    QJsonModel * model = new QJsonModel;
-    QTreeView * view = new QTreeView;
-    view->setModel(model);
-    model->load("example.json")
+```cpp
+QJsonModel * model = new QJsonModel;
+QTreeView * view = new QTreeView;
+view->setModel(model);
+model->load("example.json")
+```
+
+## Usage Python
+
+Add `qjsonmodel.py` to your `PYTHONPATH`.
+
+```python	
+import json
+import qjsonmodel
+
+model = QJsonModel()
+view = QTreeView()
+view.setModel(model)
+
+with open("example.json") as f:
+	model.load(json.load(f))
+```
