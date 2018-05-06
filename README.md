@@ -19,6 +19,10 @@ model->load("example.json")
 
 Add `qjsonmodel.py` to your `PYTHONPATH`.
 
+```bash
+$ pip install Qt.py
+```
+
 ```python	
 import json
 import qjsonmodel
