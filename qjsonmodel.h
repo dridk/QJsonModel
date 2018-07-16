@@ -38,7 +38,7 @@ class QJsonItem;
 class QJsonTreeItem
 {
 public:
-    QJsonTreeItem(QJsonTreeItem * parent = 0);
+    QJsonTreeItem(QJsonTreeItem * parent = nullptr);
     ~QJsonTreeItem();
     void appendChild(QJsonTreeItem * item);
     QJsonTreeItem *child(int row);
@@ -74,7 +74,10 @@ class QJsonModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit QJsonModel(QObject *parent = 0);
+    explicit QJsonModel(QObject *parent = nullptr);
+    QJsonModel(const QString& fileName, QObject *parent = nullptr);
+    QJsonModel(QIODevice * device, QObject *parent = nullptr);
+    QJsonModel(const QByteArray& json, QObject *parent = nullptr);
     ~QJsonModel();
     bool load(const QString& fileName);
     bool load(QIODevice * device);

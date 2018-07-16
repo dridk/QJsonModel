@@ -140,14 +140,39 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
 
 //=========================================================================
 
-QJsonModel::QJsonModel(QObject *parent) :
-    QAbstractItemModel(parent)
+QJsonModel::QJsonModel(QObject *parent)
+    : QAbstractItemModel(parent)
+    , mRootItem{new QJsonTreeItem}
 {
-    mRootItem = new QJsonTreeItem;
     mHeaders.append("key");
     mHeaders.append("value");
+}
 
+QJsonModel::QJsonModel(const QString& fileName, QObject *parent)
+    : QAbstractItemModel(parent)
+    , mRootItem{new QJsonTreeItem}
+{
+    mHeaders.append("key");
+    mHeaders.append("value");
+    load(fileName);
+}
 
+QJsonModel::QJsonModel(QIODevice * device, QObject *parent)
+    : QAbstractItemModel(parent)
+    , mRootItem{new QJsonTreeItem}
+{
+    mHeaders.append("key");
+    mHeaders.append("value");
+    load(device);
+}
+
+QJsonModel::QJsonModel(const QByteArray& json, QObject *parent)
+    : QAbstractItemModel(parent)
+    , mRootItem{new QJsonTreeItem}
+{
+    mHeaders.append("key");
+    mHeaders.append("value");
+    loadJson(json);
 }
 
 QJsonModel::~QJsonModel()
