@@ -337,8 +337,13 @@ int QJsonModel::columnCount(const QModelIndex &parent) const
 
 Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
 {
-    int col = index.column();
-    if (col == 1) {
+    int col   = index.column();
+    auto item = static_cast<QJsonTreeItem*>(index.internalPointer());
+
+    auto isArray = QJsonValue::Array == item->type();
+    auto isObject = QJsonValue::Object == item->type();
+
+    if ((col == 1) && !(isArray || isObject)) {
         return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
     } else {
         return QAbstractItemModel::flags(index);
