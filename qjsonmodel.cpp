@@ -249,11 +249,20 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
         if (index.column() == 0)
             return QString("%1").arg(item->key());
 
-        if (index.column() == 1)
-            return QString("%1").arg(item->value());
+        if (index.column() == 1) {
+            if (item->type() == QJsonValue::Double) {
+                return QString("%1").arg(item->double_value());
+            } else {
+                return QString("%1").arg(item->value());
+            }
+        }
     } else if (Qt::EditRole == role) {
         if (index.column() == 1) {
-            return QString("%1").arg(item->value());
+            if (item->type() == QJsonValue::Double) {
+                return QString("%1").arg(item->double_value());
+            } else {
+                return QString("%1").arg(item->value());
+            }
         }
     }
 
@@ -267,7 +276,11 @@ bool QJsonModel::setData(const QModelIndex &index, const QVariant &value, int ro
     if (Qt::EditRole == role) {
         if (col == 1) {
             QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
+            if (item->type() == QJsonValue::Double) {
+                item->setValue(value.toDouble());
+            } else {
                 item->setValue(value.toString());
+            }
                 emit dataChanged(index, index, {Qt::EditRole});
                 return true;
         }
