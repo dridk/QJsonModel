@@ -76,6 +76,11 @@ void QJsonTreeItem::setValue(const QString &value)
     mValue = value;
 }
 
+void QJsonTreeItem::setValue(const double& value)
+{
+    mDValue = value;
+}
+
 void QJsonTreeItem::setType(const QJsonValue::Type &type)
 {
     mType = type;
@@ -89,6 +94,11 @@ QString QJsonTreeItem::key() const
 QString QJsonTreeItem::value() const
 {
     return mValue;
+}
+
+double QJsonTreeItem::double_value() const
+{
+    return mDValue;
 }
 
 QJsonValue::Type QJsonTreeItem::type() const
@@ -128,9 +138,10 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
             rootItem->appendChild(child);
             ++index;
         }
-    }
-    else
-    {
+    }else if ( value.isDouble()){
+        rootItem->setValue(value.toDouble());
+        rootItem->setType(value.type());
+    } else {
         rootItem->setValue(value.toVariant().toString());
         rootItem->setType(value.type());
     }
@@ -245,8 +256,6 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(item->value());
         }
     }
-
-
 
     return QVariant();
 
@@ -385,6 +394,9 @@ QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
             arr.append(genJson(ch));
         }
         return arr;
+    } else if (QJsonValue::Double == type) {
+        QJsonValue va(item->double_value());
+        return va;
     } else {
         QJsonValue va(item->value());
         return va;
