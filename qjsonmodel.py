@@ -113,7 +113,7 @@ class QJsonTreeItem(object):
         elif isinstance(value, list):
             for index, value in enumerate(value):
                 child = self.load(value, rootItem)
-                child.key = str(index)
+                child.key = index
                 child.type = type(value)
                 rootItem.appendChild(child)
 
@@ -130,6 +130,9 @@ class QJsonModel(QtCore.QAbstractItemModel):
 
         self._rootItem = QJsonTreeItem()
         self._headers = ("key", "value")
+
+    def clear(self):
+        self.load({})
 
     def load(self, document):
         """Load from dictionary
