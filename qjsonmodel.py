@@ -113,7 +113,7 @@ class QJsonTreeItem(object):
         elif isinstance(value, list):
             for index, value in enumerate(value):
                 child = self.load(value, rootItem)
-                child.key = str(index)
+                child.key = index
                 child.type = type(value)
                 rootItem.appendChild(child)
 
