@@ -131,6 +131,9 @@ class QJsonModel(QtCore.QAbstractItemModel):
         self._rootItem = QJsonTreeItem()
         self._headers = ("key", "value")
 
+    def clear(self):
+        self.load({})
+
     def load(self, document):
         """Load from dictionary
 
