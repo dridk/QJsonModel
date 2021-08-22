@@ -26,7 +26,6 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
     QTreeView * view   = new QTreeView;
     QJsonModel * model = new QJsonModel;
 
@@ -36,6 +35,7 @@ int main(int argc, char *argv[])
                        "firstName": "John",
                        "lastName": "Smith",
                        "age": 25,
+                       "far-sighted": true,
                        "address":
                        {
                            "streetAddress": "21 2nd Street",
@@ -55,8 +55,6 @@ int main(int argc, char *argv[])
                            }
                        ]
                    })";
-
-
 
     model->loadJson(QByteArray::fromStdString(json));
     view->show();

@@ -71,7 +71,7 @@ void QJsonTreeItem::setKey(const QString &key)
     mKey = key;
 }
 
-void QJsonTreeItem::setValue(const QString &value)
+void QJsonTreeItem::setValue(const QVariant &value)
 {
     mValue = value;
 }
@@ -86,7 +86,7 @@ QString QJsonTreeItem::key() const
     return mKey;
 }
 
-QString QJsonTreeItem::value() const
+QVariant QJsonTreeItem::value() const
 {
     return mValue;
 }
@@ -131,7 +131,7 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
     }
     else
     {
-        rootItem->setValue(value.toVariant().toString());
+        rootItem->setValue(value.toVariant());
         rootItem->setType(value.type());
     }
 
@@ -239,14 +239,12 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(item->key());
 
         if (index.column() == 1)
-            return QString("%1").arg(item->value());
+            return item->value();
     } else if (Qt::EditRole == role) {
         if (index.column() == 1) {
-            return QString("%1").arg(item->value());
+            return item->value();
         }
     }
-
-
 
     return QVariant();
 
@@ -258,7 +256,7 @@ bool QJsonModel::setData(const QModelIndex &index, const QVariant &value, int ro
     if (Qt::EditRole == role) {
         if (col == 1) {
             QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
-                item->setValue(value.toString());
+                item->setValue(value);
                 emit dataChanged(index, index, {Qt::EditRole});
                 return true;
         }
@@ -386,7 +384,18 @@ QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
         }
         return arr;
     } else {
-        QJsonValue va(item->value());
+        QJsonValue va;
+        switch(item->value().type()){
+        case QVariant::Bool:
+        {
+            va = item->value().toBool();
+            break;
+        }
+        default:
+            va = item->value().toString();
+            break;
+        }
+        (item->value());
         return va;
     }
 
