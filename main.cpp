@@ -59,5 +59,8 @@ int main(int argc, char *argv[])
     model->loadJson(QByteArray::fromStdString(json));
     view->show();
 
+    QByteArray mjson = model->json();
+    qDebug() << mjson;
+
     return a.exec();
 }

@@ -140,6 +140,85 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
 
 //=========================================================================
 
+inline uchar hexdig(uint u)
+{
+    return (u < 0xa ? '0' + u : 'a' + u - 0xa);
+}
+
+QByteArray escapedString(const QString &s)
+{
+    QByteArray ba(s.length(), Qt::Uninitialized);
+    uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
+    const uchar *ba_end = cursor + ba.length();
+    const ushort *src = reinterpret_cast<const ushort *>(s.constBegin());
+    const ushort *const end = reinterpret_cast<const ushort *>(s.constEnd());
+    while (src != end)
+    {
+        if (cursor >= ba_end - 6)
+        {
+            // ensure we have enough space
+            int pos = cursor - (const uchar *)ba.constData();
+            ba.resize(ba.size() * 2);
+            cursor = (uchar *)ba.data() + pos;
+            ba_end = (const uchar *)ba.constData() + ba.length();
+        }
+        uint u = *src++;
+        if (u < 0x80)
+        {
+            if (u < 0x20 || u == 0x22 || u == 0x5c)
+            {
+                *cursor++ = '\\';
+                switch (u)
+                {
+                case 0x22:
+                    *cursor++ = '"';
+                    break;
+                case 0x5c:
+                    *cursor++ = '\\';
+                    break;
+                case 0x8:
+                    *cursor++ = 'b';
+                    break;
+                case 0xc:
+                    *cursor++ = 'f';
+                    break;
+                case 0xa:
+                    *cursor++ = 'n';
+                    break;
+                case 0xd:
+                    *cursor++ = 'r';
+                    break;
+                case 0x9:
+                    *cursor++ = 't';
+                    break;
+                default:
+                    *cursor++ = 'u';
+                    *cursor++ = '0';
+                    *cursor++ = '0';
+                    *cursor++ = hexdig(u >> 4);
+                    *cursor++ = hexdig(u & 0xf);
+                }
+            }
+            else
+            {
+                *cursor++ = (uchar)u;
+            }
+        }
+        else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0)
+        {
+            // failed to get valid utf8 use JSON escape sequence
+            *cursor++ = '\\';
+            *cursor++ = 'u';
+            *cursor++ = hexdig(u >> 12 & 0x0f);
+            *cursor++ = hexdig(u >> 8 & 0x0f);
+            *cursor++ = hexdig(u >> 4 & 0x0f);
+            *cursor++ = hexdig(u & 0x0f);
+        }
+    }
+    ba.resize(cursor - (const uchar *)ba.constData());
+    return ba;
+}
+
 QJsonModel::QJsonModel(QObject *parent)
     : QAbstractItemModel(parent)
     , mRootItem{new QJsonTreeItem}
@@ -348,19 +427,129 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     }
 }
 
-QJsonDocument QJsonModel::json() const
+QByteArray QJsonModel::json()
 {
-
-    auto v = genJson(mRootItem);
-    QJsonDocument doc;
-
-    if (v.isObject()) {
-        doc = QJsonDocument(v.toObject());
-    } else {
-        doc = QJsonDocument(v.toArray());
+    auto jsonValue = genJson(mRootItem);
+    QByteArray json;
+    if (jsonValue.isNull())
+    {
+        return json;
     }
+    if (jsonValue.isArray())
+    {
+        arrayToJson(jsonValue.toArray(), json, 0, false);
+    }
+    else
+    {
+        objectToJson(jsonValue.toObject(), json, 0, false);
+    }
+    return json;
+}
 
-    return doc;
+void QJsonModel::objectToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact)
+{
+    json += compact ? "{" : "{\n";
+    objectContentToJson(jsonObject, json, indent + (compact ? 0 : 1), compact);
+    json += QByteArray(4 * indent, ' ');
+    json += compact ? "}" : "}\n";
+}
+void QJsonModel::arrayToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact)
+{
+    json += compact ? "[" : "[\n";
+    arrayContentToJson(jsonArray, json, indent + (compact ? 0 : 1), compact);
+    json += QByteArray(4 * indent, ' ');
+    json += compact ? "]" : "]\n";
+}
+
+void QJsonModel::arrayContentToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact)
+{
+    if (jsonArray.size() <= 0)
+    {
+        return;
+    }
+    QByteArray indentString(4 * indent, ' ');
+    int i = 0;
+    while (1)
+    {
+        json += indentString;
+        valueToJson(jsonArray.at(i), json, indent, compact);
+        if (++i == jsonArray.size())
+        {
+            if (!compact)
+                json += '\n';
+            break;
+        }
+        json += compact ? "," : ",\n";
+    }
+}
+void QJsonModel::objectContentToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact)
+{
+    if (jsonObject.size() <= 0)
+    {
+        return;
+    }
+    QByteArray indentString(4 * indent, ' ');
+    int i = 0;
+    while (1)
+    {
+        QString key = jsonObject.keys().at(i);
+        json += indentString;
+        json += '"';
+        json += escapedString(key);
+        json += compact ? "\":" : "\": ";
+        valueToJson(jsonObject.value(key), json, indent, compact);
+        if (++i == jsonObject.size())
+        {
+            if (!compact)
+                json += '\n';
+            break;
+        }
+        json += compact ? "," : ",\n";
+    }
+}
+
+void QJsonModel::valueToJson(QJsonValue jsonValue, QByteArray &json, int indent, bool compact)
+{
+    QJsonValue::Type type = jsonValue.type();
+    switch (type)
+    {
+    case QJsonValue::Bool:
+        json += jsonValue.toBool() ? "true" : "false";
+        break;
+    case QJsonValue::Double:
+    {
+        const double d = jsonValue.toDouble();
+        if (qIsFinite(d))
+        {
+            json += QByteArray::number(d, 'f', QLocale::FloatingPointShortest);
+        }
+        else
+        {
+            json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
+        }
+        break;
+    }
+    case QJsonValue::String:
+        json += '"';
+        json += escapedString(jsonValue.toString());
+        json += '"';
+        break;
+    case QJsonValue::Array:
+        json += compact ? "[" : "[\n";
+        arrayContentToJson(jsonValue.toArray(), json, indent + (compact ? 0 : 1), compact);
+        json += QByteArray(4 * indent, ' ');
+        json += ']';
+        break;
+    case QJsonValue::Object:
+        json += compact ? "{" : "{\n";
+        objectContentToJson(jsonValue.toObject(), json, indent + (compact ? 0 : 1), compact);
+        json += QByteArray(4 * indent, ' ');
+        json += '}';
+        break;
+    case QJsonValue::Null:
+    default:
+        json += "null";
+    }
 }
 
 QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
