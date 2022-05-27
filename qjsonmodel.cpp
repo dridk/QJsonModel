@@ -23,8 +23,8 @@
  */
 
 #include "qjsonmodel.h"
-#include <QFile>
 #include <QDebug>
+#include <QFile>
 #include <QFont>
 
 
@@ -98,39 +98,31 @@ QJsonValue::Type QJsonTreeItem::type() const
 
 QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* parent)
 {
-    QJsonTreeItem * rootItem = new QJsonTreeItem(parent);
+    QJsonTreeItem *rootItem = new QJsonTreeItem(parent);
     rootItem->setKey("root");
 
-    if ( value.isObject())
-    {
-
+    if (value.isObject()) {
         //Get all QJsonValue childs
-        for (QString key : value.toObject().keys()){
+        const QStringList keys = value.toObject().keys(); // To prevent clazy-range warning
+        for (const QString &key : keys) {
             QJsonValue v = value.toObject().value(key);
-            QJsonTreeItem * child = load(v,rootItem);
+            QJsonTreeItem *child = load(v, rootItem);
             child->setKey(key);
             child->setType(v.type());
             rootItem->appendChild(child);
-
         }
-
-    }
-
-    else if ( value.isArray())
-    {
+    } else if (value.isArray()) {
         //Get all QJsonValue childs
         int index = 0;
-        for (QJsonValue v : value.toArray()){
-
-            QJsonTreeItem * child = load(v,rootItem);
+        const QJsonArray array = value.toArray(); // To prevent clazy-range warning
+        for (const QJsonValue &v : array) {
+            QJsonTreeItem *child = load(v, rootItem);
             child->setKey(QString::number(index));
             child->setType(v.type());
             rootItem->appendChild(child);
             ++index;
         }
-    }
-    else
-    {
+    } else {
         rootItem->setValue(value.toVariant());
         rootItem->setType(value.type());
     }
@@ -152,24 +144,19 @@ QByteArray escapedString(const QString &s)
     const uchar *ba_end = cursor + ba.length();
     const ushort *src = reinterpret_cast<const ushort *>(s.constBegin());
     const ushort *const end = reinterpret_cast<const ushort *>(s.constEnd());
-    while (src != end)
-    {
-        if (cursor >= ba_end - 6)
-        {
+    while (src != end) {
+        if (cursor >= ba_end - 6) {
             // ensure we have enough space
-            int pos = cursor - (const uchar *)ba.constData();
+            int pos = cursor - reinterpret_cast<const uchar *>(ba.constData());
             ba.resize(ba.size() * 2);
-            cursor = (uchar *)ba.data() + pos;
-            ba_end = (const uchar *)ba.constData() + ba.length();
+            cursor = reinterpret_cast<uchar *>(ba.data()) + pos;
+            ba_end = reinterpret_cast<const uchar *>(ba.constData()) + ba.length();
         }
         uint u = *src++;
-        if (u < 0x80)
-        {
-            if (u < 0x20 || u == 0x22 || u == 0x5c)
-            {
+        if (u < 0x80) {
+            if (u < 0x20 || u == 0x22 || u == 0x5c) {
                 *cursor++ = '\\';
-                switch (u)
-                {
+                switch (u) {
                 case 0x22:
                     *cursor++ = '"';
                     break;
@@ -198,14 +185,10 @@ QByteArray escapedString(const QString &s)
                     *cursor++ = hexdig(u >> 4);
                     *cursor++ = hexdig(u & 0xf);
                 }
-            }
-            else
-            {
+            } else {
                 *cursor++ = (uchar)u;
             }
-        }
-        else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0)
-        {
+        } else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0) {
             // failed to get valid utf8 use JSON escape sequence
             *cursor++ = '\\';
             *cursor++ = 'u';
@@ -215,7 +198,7 @@ QByteArray escapedString(const QString &s)
             *cursor++ = hexdig(u & 0x0f);
         }
     }
-    ba.resize(cursor - (const uchar *)ba.constData());
+    ba.resize(cursor - reinterpret_cast<const uchar *>(ba.constData()));
     return ba;
 }
 
@@ -236,7 +219,7 @@ QJsonModel::QJsonModel(const QString& fileName, QObject *parent)
     load(fileName);
 }
 
-QJsonModel::QJsonModel(QIODevice * device, QObject *parent)
+QJsonModel::QJsonModel(QIODevice *device, QObject *parent)
     : QAbstractItemModel(parent)
     , mRootItem{new QJsonTreeItem}
 {
@@ -266,8 +249,9 @@ bool QJsonModel::load(const QString &fileName)
     if (file.open(QIODevice::ReadOnly)) {
         success = load(&file);
         file.close();
+    } else {
+        success = false;
     }
-    else success = false;
 
     return success;
 }
@@ -281,8 +265,7 @@ bool QJsonModel::loadJson(const QByteArray &json)
 {
     auto const& jdoc = QJsonDocument::fromJson(json);
 
-    if (!jdoc.isNull())
-    {
+    if (!jdoc.isNull()) {
         beginResetModel();
         delete mRootItem;
         if (jdoc.isArray()) {
@@ -304,29 +287,23 @@ bool QJsonModel::loadJson(const QByteArray &json)
 
 QVariant QJsonModel::data(const QModelIndex &index, int role) const
 {
-
     if (!index.isValid())
-        return QVariant();
-
+        return {};
 
     QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
 
-
     if (role == Qt::DisplayRole) {
-
         if (index.column() == 0)
             return QString("%1").arg(item->key());
 
         if (index.column() == 1)
             return item->value();
     } else if (Qt::EditRole == role) {
-        if (index.column() == 1) {
+        if (index.column() == 1)
             return item->value();
-        }
     }
 
-    return QVariant();
-
+    return {};
 }
 
 bool QJsonModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -335,34 +312,30 @@ bool QJsonModel::setData(const QModelIndex &index, const QVariant &value, int ro
     if (Qt::EditRole == role) {
         if (col == 1) {
             QJsonTreeItem *item = static_cast<QJsonTreeItem*>(index.internalPointer());
-                item->setValue(value);
-                emit dataChanged(index, index, {Qt::EditRole});
-                return true;
+            item->setValue(value);
+            emit dataChanged(index, index, {Qt::EditRole});
+            return true;
         }
     }
 
     return false;
 }
 
-
-
 QVariant QJsonModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
-        return QVariant();
+        return {};
 
-    if (orientation == Qt::Horizontal) {
-
+    if (orientation == Qt::Horizontal)
         return mHeaders.value(section);
-    }
     else
-        return QVariant();
+        return {};
 }
 
 QModelIndex QJsonModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
-        return QModelIndex();
+        return {};
 
     QJsonTreeItem *parentItem;
 
@@ -375,13 +348,13 @@ QModelIndex QJsonModel::index(int row, int column, const QModelIndex &parent) co
     if (childItem)
         return createIndex(row, column, childItem);
     else
-        return QModelIndex();
+        return {};
 }
 
 QModelIndex QJsonModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return QModelIndex();
+        return {};
 
     QJsonTreeItem *childItem = static_cast<QJsonTreeItem*>(index.internalPointer());
     QJsonTreeItem *parentItem = childItem->parent();
@@ -420,11 +393,10 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     auto isArray = QJsonValue::Array == item->type();
     auto isObject = QJsonValue::Object == item->type();
 
-    if ((col == 1) && !(isArray || isObject)) {
+    if ((col == 1) && !(isArray || isObject))
         return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-    } else {
+    else
         return QAbstractItemModel::flags(index);
-    }
 }
 
 QByteArray QJsonModel::json()
@@ -432,17 +404,13 @@ QByteArray QJsonModel::json()
     auto jsonValue = genJson(mRootItem);
     QByteArray json;
     if (jsonValue.isNull())
-    {
         return json;
-    }
+
     if (jsonValue.isArray())
-    {
         arrayToJson(jsonValue.toArray(), json, 0, false);
-    }
     else
-    {
         objectToJson(jsonValue.toObject(), json, 0, false);
-    }
+
     return json;
 }
 
@@ -464,17 +432,14 @@ void QJsonModel::arrayToJson(QJsonArray jsonArray, QByteArray &json, int indent,
 void QJsonModel::arrayContentToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact)
 {
     if (jsonArray.size() <= 0)
-    {
         return;
-    }
+
     QByteArray indentString(4 * indent, ' ');
     int i = 0;
-    while (1)
-    {
+    while (1) {
         json += indentString;
         valueToJson(jsonArray.at(i), json, indent, compact);
-        if (++i == jsonArray.size())
-        {
+        if (++i == jsonArray.size()) {
             if (!compact)
                 json += '\n';
             break;
@@ -485,21 +450,18 @@ void QJsonModel::arrayContentToJson(QJsonArray jsonArray, QByteArray &json, int 
 void QJsonModel::objectContentToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact)
 {
     if (jsonObject.size() <= 0)
-    {
         return;
-    }
+
     QByteArray indentString(4 * indent, ' ');
     int i = 0;
-    while (1)
-    {
+    while (1) {
         QString key = jsonObject.keys().at(i);
         json += indentString;
         json += '"';
         json += escapedString(key);
         json += compact ? "\":" : "\": ";
         valueToJson(jsonObject.value(key), json, indent, compact);
-        if (++i == jsonObject.size())
-        {
+        if (++i == jsonObject.size()) {
             if (!compact)
                 json += '\n';
             break;
@@ -511,20 +473,15 @@ void QJsonModel::objectContentToJson(QJsonObject jsonObject, QByteArray &json, i
 void QJsonModel::valueToJson(QJsonValue jsonValue, QByteArray &json, int indent, bool compact)
 {
     QJsonValue::Type type = jsonValue.type();
-    switch (type)
-    {
+    switch (type) {
     case QJsonValue::Bool:
         json += jsonValue.toBool() ? "true" : "false";
         break;
-    case QJsonValue::Double:
-    {
+    case QJsonValue::Double: {
         const double d = jsonValue.toDouble();
-        if (qIsFinite(d))
-        {
+        if (qIsFinite(d)) {
             json += QByteArray::number(d, 'f', QLocale::FloatingPointShortest);
-        }
-        else
-        {
+        } else {
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
         }
         break;
@@ -574,9 +531,8 @@ QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
         return arr;
     } else {
         QJsonValue va;
-        switch(item->value().type()){
-        case QVariant::Bool:
-        {
+        switch(item->value().type()) {
+        case QVariant::Bool: {
             va = item->value().toBool();
             break;
         }
@@ -587,5 +543,4 @@ QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
         (item->value());
         return va;
     }
-
 }

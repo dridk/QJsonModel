@@ -26,10 +26,10 @@
 #define QJSONMODEL_H
 
 #include <QAbstractItemModel>
-#include <QJsonDocument>
-#include <QJsonValue>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QIcon>
 
 namespace QUtf8Functions
@@ -267,9 +267,9 @@ class QJsonItem;
 class QJsonTreeItem
 {
 public:
-    QJsonTreeItem(QJsonTreeItem * parent = nullptr);
+    QJsonTreeItem(QJsonTreeItem *parent = nullptr);
     ~QJsonTreeItem();
-    void appendChild(QJsonTreeItem * item);
+    void appendChild(QJsonTreeItem *item);
     QJsonTreeItem *child(int row);
     QJsonTreeItem *parent();
     int childCount() const;
@@ -281,7 +281,7 @@ public:
     QVariant value() const;
     QJsonValue::Type type() const;
 
-    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem * parent = 0);
+    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem *parent = nullptr);
 
 protected:
 
@@ -290,7 +290,7 @@ private:
     QVariant mValue;
     QJsonValue::Type mType;
     QList<QJsonTreeItem*> mChilds;
-    QJsonTreeItem * mParent;
+    QJsonTreeItem *mParent = nullptr;
 };
 
 //---------------------------------------------------
@@ -301,21 +301,21 @@ class QJsonModel : public QAbstractItemModel
 public:
     explicit QJsonModel(QObject *parent = nullptr);
     QJsonModel(const QString& fileName, QObject *parent = nullptr);
-    QJsonModel(QIODevice * device, QObject *parent = nullptr);
+    QJsonModel(QIODevice *device, QObject *parent = nullptr);
     QJsonModel(const QByteArray& json, QObject *parent = nullptr);
     ~QJsonModel();
     bool load(const QString& fileName);
-    bool load(QIODevice * device);
+    bool load(QIODevice *device);
     bool loadJson(const QByteArray& json);
-    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
-    QModelIndex index(int row, int column,const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    QByteArray json() ;
+    QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QModelIndex index(int row, int column,const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QByteArray json();
     QByteArray jsonToByte(QJsonValue jsonValue);
     void objectToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact);
     void arrayToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact);
@@ -325,7 +325,7 @@ public:
 
 private:
     QJsonValue genJson(QJsonTreeItem *) const;
-    QJsonTreeItem * mRootItem;
+    QJsonTreeItem *mRootItem = nullptr;
     QStringList mHeaders;
 };
 

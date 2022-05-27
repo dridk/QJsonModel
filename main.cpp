@@ -18,16 +18,16 @@
 **********************************************/
 
 #include <QApplication>
-#include <QTreeView>
 #include <QFile>
+#include <QTreeView>
 #include <string>
 #include "qjsonmodel.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QTreeView * view   = new QTreeView;
-    QJsonModel * model = new QJsonModel;
+    QTreeView *view   = new QTreeView;
+    QJsonModel *model = new QJsonModel;
 
     view->setModel(model);
 
