@@ -28,6 +28,14 @@
 #include <QFont>
 
 
+inline bool contains(const QStringList& list, const QString &value) {
+    for (auto val : list)
+        if (value.contains(val, Qt::CaseInsensitive))
+            return true;
+
+    return false;
+}
+
 QJsonTreeItem::QJsonTreeItem(QJsonTreeItem *parent)
 {
     mParent = parent;
@@ -96,7 +104,7 @@ QJsonValue::Type QJsonTreeItem::type() const
     return mType;
 }
 
-QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* parent)
+QJsonTreeItem *QJsonTreeItem::load(const QJsonValue& value, const QStringList &exceptions, QJsonTreeItem *parent)
 {
     QJsonTreeItem *rootItem = new QJsonTreeItem(parent);
     rootItem->setKey("root");
@@ -105,8 +113,11 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
         //Get all QJsonValue childs
         const QStringList keys = value.toObject().keys(); // To prevent clazy-range warning
         for (const QString &key : keys) {
+            if (contains(exceptions, key)) {
+                continue;
+            }
             QJsonValue v = value.toObject().value(key);
-            QJsonTreeItem *child = load(v, rootItem);
+            QJsonTreeItem *child = load(v, exceptions, rootItem);
             child->setKey(key);
             child->setType(v.type());
             rootItem->appendChild(child);
@@ -116,7 +127,7 @@ QJsonTreeItem* QJsonTreeItem::load(const QJsonValue& value, QJsonTreeItem* paren
         int index = 0;
         const QJsonArray array = value.toArray(); // To prevent clazy-range warning
         for (const QJsonValue &v : array) {
-            QJsonTreeItem *child = load(v, rootItem);
+            QJsonTreeItem *child = load(v, exceptions, rootItem);
             child->setKey(QString::number(index));
             child->setType(v.type());
             rootItem->appendChild(child);
@@ -269,11 +280,11 @@ bool QJsonModel::loadJson(const QByteArray &json)
         beginResetModel();
         delete mRootItem;
         if (jdoc.isArray()) {
-            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.array()));
+            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.array()), mExceptions);
             mRootItem->setType(QJsonValue::Array);
 
         } else {
-            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.object()));
+            mRootItem = QJsonTreeItem::load(QJsonValue(jdoc.object()), mExceptions);
             mRootItem->setType(QJsonValue::Object);
         }
         endResetModel();
@@ -509,7 +520,12 @@ void QJsonModel::valueToJson(QJsonValue jsonValue, QByteArray &json, int indent,
     }
 }
 
-QJsonValue  QJsonModel::genJson(QJsonTreeItem * item) const
+void QJsonModel::addException(const QStringList &exceptions)
+{
+    mExceptions = exceptions;
+}
+
+QJsonValue QJsonModel::genJson(QJsonTreeItem *item) const
 {
     auto type   = item->type();
     int  nchild = item->childCount();

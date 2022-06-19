@@ -281,7 +281,7 @@ public:
     QVariant value() const;
     QJsonValue::Type type() const;
 
-    static QJsonTreeItem* load(const QJsonValue& value, QJsonTreeItem *parent = nullptr);
+    static QJsonTreeItem *load(const QJsonValue& value, const QStringList &exceptions = {}, QJsonTreeItem *parent = nullptr);
 
 protected:
 
@@ -322,11 +322,15 @@ public:
     void arrayContentToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact);
     void objectContentToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact);
     void valueToJson(QJsonValue jsonValue, QByteArray &json, int indent, bool compact);
+    //! List of tags to skip during JSON parsing
+    void addException(const QStringList &exceptions);
 
 private:
     QJsonValue genJson(QJsonTreeItem *) const;
     QJsonTreeItem *mRootItem = nullptr;
     QStringList mHeaders;
+    //! List of exceptions (e.g. comments). Case insensitive, compairs on "contains".
+    QStringList mExceptions;
 };
 
 #endif // QJSONMODEL_H
