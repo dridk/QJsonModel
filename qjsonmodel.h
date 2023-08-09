@@ -315,7 +315,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QByteArray json();
+    QByteArray json(bool compact = false);
     QByteArray jsonToByte(QJsonValue jsonValue);
     void objectToJson(QJsonObject jsonObject, QByteArray &json, int indent, bool compact);
     void arrayToJson(QJsonArray jsonArray, QByteArray &json, int indent, bool compact);

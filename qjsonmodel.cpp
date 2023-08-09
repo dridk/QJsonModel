@@ -399,7 +399,7 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
         return QAbstractItemModel::flags(index);
 }
 
-QByteArray QJsonModel::json()
+QByteArray QJsonModel::json(bool compact)
 {
     auto jsonValue = genJson(mRootItem);
     QByteArray json;
@@ -407,9 +407,9 @@ QByteArray QJsonModel::json()
         return json;
 
     if (jsonValue.isArray())
-        arrayToJson(jsonValue.toArray(), json, 0, false);
+        arrayToJson(jsonValue.toArray(), json, 0, compact);
     else
-        objectToJson(jsonValue.toObject(), json, 0, false);
+        objectToJson(jsonValue.toObject(), json, 0, compact);
 
     return json;
 }
