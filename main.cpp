@@ -18,6 +18,7 @@
 **********************************************/
 
 #include <QApplication>
+#include <QDebug>
 #include <QFile>
 #include <QTreeView>
 #include <string>
@@ -46,16 +47,19 @@ int main(int argc, char *argv[])
                        "phoneNumber":
                        [
                            {
+                             "comment": "This is just a comment!",
                              "type": "home",
                              "number": "212 555-1234"
                            },
                            {
+                             "comment1": "Another comment!",
                              "type": "fax",
                              "number": "646 555-4567"
                            }
                        ]
                    })";
 
+    model->addException({"comment"});
     model->loadJson(QByteArray::fromStdString(json));
     view->show();
 
