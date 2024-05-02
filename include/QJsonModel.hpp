@@ -31,10 +31,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonValue>
 
 #include "details/QUtf8.hpp"
-
 
 class QJsonModel;
 class QJsonItem;
