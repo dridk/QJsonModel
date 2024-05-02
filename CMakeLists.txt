@@ -77,7 +77,7 @@ set(QJsonModel_PUBLIC_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
 
 add_custom_target(QJsonModel_include_files COMMAND ${CMAKE_COMMAND} -E copy_directory ${QJsonModel_TOP_SOURCE_DIR}/include ${QJsonModel_PUBLIC_INCLUDE_DIR}
     DEPENDS ${QJsonModel_TOP_SOURCE_DIR}/include
-    COMMENT "Copying include files to ${IOCore_PUBLIC_INCLUDE_DIR}"
+    COMMENT "Copying include files to ${QJsonModel_PUBLIC_INCLUDE_DIR}"
 )
 
 target_include_directories(QJsonModel
@@ -87,13 +87,15 @@ PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR}
 add_dependencies(QJsonModel QJsonModel_include_files)
 
 # Manually call moc on all header files
-file(GLOB Qt6JsonModel_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
-qt_wrap_cpp(Qt6JsonModel_MOC_SOURCES  ${Qt6JsonModel_HEADER_FILES}
+file(GLOB_RECURSE QJsonModel_HEADER_FILES
+	${QJsonModel_TOP_SOURCE_DIR}/include/**.hpp)
+
+qt_wrap_cpp(QJsonModel_MOC_SOURCES  ${QJsonModel_HEADER_FILES}
 	TARGET QJsonModel
 )
 
 # Append the MOC files to the source list
-target_sources(QJsonModel PRIVATE ${Qt6JsonModel_MOC_SOURCES})
+target_sources(QJsonModel PUBLIC ${QJsonModel_MOC_SOURCES})
 
 add_library(QJsonModelStatic STATIC)
 add_library(Qt6::QJsonModelStatic ALIAS QJsonModelStatic )
