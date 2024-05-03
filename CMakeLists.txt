@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
 # Additional paths to search for custom and third-party CMake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(BuildProperties)
 
