@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
 
-message(WARNING "MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
 # Additional paths to search for custom and third-party CMake modules
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
@@ -40,7 +39,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 
 # Disable GNU compiler extensions
-oset(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
@@ -60,12 +59,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_compile_definitions(-DDEBUG=1 -DQDEBUG=1)
 endif()
 
-qt_add_library(QJsonModel
-OBJECT
+qt_add_library(QJsonModel OBJECT
 	QJsonModel.cpp
 )
-#set_target_properties(QJsonModel PROPERTIES EXPORT_NAME QJsonModel)
-add_library(Qt6::QJsonModel ALIAS QJsonModel)
+
 
 # Since headers are in the include/ directory, going to handle MOC invocation
 # manually.
@@ -98,13 +95,14 @@ qt_wrap_cpp(QJsonModel_MOC_SOURCES  ${QJsonModel_HEADER_FILES}
 
 # Append the MOC files to the source list
 target_sources(QJsonModel PUBLIC ${QJsonModel_MOC_SOURCES})
+add_library(QJsonModel::QJsonModel ALIAS QJsonModel)
 
 add_library(QJsonModelStatic STATIC)
-add_library(Qt6::QJsonModelStatic ALIAS QJsonModelStatic )
+add_library(QJsonModel::Static ALIAS QJsonModelStatic )
 set_target_properties(QJsonModelStatic PROPERTIES OUTPUT_NAME "QJsonModel")
 
 add_library(QJsonModelShared SHARED )
-add_library(Qt6::QJsonModelShared ALIAS QJsonModelShared )
+add_library(QJsonModel::Shared ALIAS QJsonModelShared )
 set_target_properties(QJsonModelShared PROPERTIES OUTPUT_NAME "QJsonModel")
 
 target_link_libraries(QJsonModelStatic PRIVATE QJsonModel)
