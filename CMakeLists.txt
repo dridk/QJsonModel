@@ -72,24 +72,25 @@ set_target_properties(QJsonModel PROPERTIES
 )
 
 set(QJsonModel_PUBLIC_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
-#file(MAKE_DIRECTORY ${Qt6JsonModel_TOP_SOURCE_DIR})
+#file(MAKE_DIRECTORY ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
-add_custom_target(QJsonModel_include_files COMMAND ${CMAKE_COMMAND} -E copy_directory ${QJsonModel_TOP_SOURCE_DIR}/include ${QJsonModel_PUBLIC_INCLUDE_DIR}
-    DEPENDS ${QJsonModel_TOP_SOURCE_DIR}/include
-    COMMENT "Copying include files to ${QJsonModel_PUBLIC_INCLUDE_DIR}"
+add_custom_target(QJsonModel_copy_include_files
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${QJsonModel_TOP_SOURCE_DIR}/include ${QJsonModel_PUBLIC_INCLUDE_DIR}
+	DEPENDS ${QJsonModel_TOP_SOURCE_DIR}/include
+	COMMENT "Copying include files to ${QJsonModel_PUBLIC_INCLUDE_DIR}"
 )
-add_dependencies(QJsonModel QJsonModel_include_files)
+add_dependencies(QJsonModel QJsonModel_copy_include_files)
 
 # Manually call moc on all header files
 file(GLOB_RECURSE QJsonModel_HEADER_FILES
 	${QJsonModel_TOP_SOURCE_DIR}/include/**.hpp)
 
-qt_wrap_cpp(QJsonModel_MOC_SOURCES  ${QJsonModel_HEADER_FILES}
+qt_wrap_cpp(QJsonModel_MOC_SOURCES	${QJsonModel_HEADER_FILES}
 	TARGET QJsonModel
 )
 
 # Append the MOC files to the source list
-target_sources(QJsonModel PUBLIC ${QJsonModel_MOC_SOURCES})
+target_sources(QJsonModel PRIVATE ${QJsonModel_MOC_SOURCES})
 add_library(QJsonModel::QJsonModel ALIAS QJsonModel)
 
 target_link_libraries(QJsonModel
@@ -99,8 +100,7 @@ PUBLIC
 	Qt6::Widgets
 )
 
-target_include_directories(QJsonModel PRIVATE ${QJsonModel_TOP_SOURCE_DIR}/include)
-target_include_directories(QJsonModel INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
+target_include_directories(QJsonModel PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
 add_library(QJsonModelStatic STATIC)
 add_library(QJsonModel::Static ALIAS QJsonModelStatic )
@@ -113,8 +113,8 @@ set_target_properties(QJsonModelShared PROPERTIES OUTPUT_NAME "QJsonModel")
 target_link_libraries(QJsonModelStatic PRIVATE QJsonModel)
 target_link_libraries(QJsonModelShared PRIVATE QJsonModel)
 
-target_include_directories(QJsonModelStatic INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
-target_include_directories(QJsonModelShared INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
+#target_include_directories(QJsonModelStatic PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
+#target_include_directories(QJsonModelShared  PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
 
 # vim: ts=2 sw=2 noet foldmethod=indent :
