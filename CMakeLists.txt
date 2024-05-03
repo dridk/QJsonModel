@@ -78,11 +78,6 @@ add_custom_target(QJsonModel_include_files COMMAND ${CMAKE_COMMAND} -E copy_dire
     DEPENDS ${QJsonModel_TOP_SOURCE_DIR}/include
     COMMENT "Copying include files to ${QJsonModel_PUBLIC_INCLUDE_DIR}"
 )
-
-target_include_directories(QJsonModel
-SYSTEM BEFORE
-PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR}
-)
 add_dependencies(QJsonModel QJsonModel_include_files)
 
 # Manually call moc on all header files
@@ -97,6 +92,16 @@ qt_wrap_cpp(QJsonModel_MOC_SOURCES  ${QJsonModel_HEADER_FILES}
 target_sources(QJsonModel PUBLIC ${QJsonModel_MOC_SOURCES})
 add_library(QJsonModel::QJsonModel ALIAS QJsonModel)
 
+target_link_libraries(QJsonModel
+PUBLIC
+	Qt6::Core
+	Qt6::Gui
+	Qt6::Widgets
+)
+
+target_include_directories(QJsonModel PRIVATE ${QJsonModel_TOP_SOURCE_DIR}/include)
+target_include_directories(QJsonModel INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
+
 add_library(QJsonModelStatic STATIC)
 add_library(QJsonModel::Static ALIAS QJsonModelStatic )
 set_target_properties(QJsonModelStatic PROPERTIES OUTPUT_NAME "QJsonModel")
@@ -108,11 +113,8 @@ set_target_properties(QJsonModelShared PROPERTIES OUTPUT_NAME "QJsonModel")
 target_link_libraries(QJsonModelStatic PRIVATE QJsonModel)
 target_link_libraries(QJsonModelShared PRIVATE QJsonModel)
 
-target_link_libraries(QJsonModel
-PUBLIC
-	Qt6::Core
-	Qt6::Gui
-	Qt6::Widgets
-)
+target_include_directories(QJsonModelStatic INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
+target_include_directories(QJsonModelShared INTERFACE ${QJsonModel_PUBLIC_INCLUDE_DIR})
+
 
 # vim: ts=2 sw=2 noet foldmethod=indent :
