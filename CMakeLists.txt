@@ -15,7 +15,7 @@ disable_tests_if_subproject()
 #git_setup_submodules()
 
 project(Qt6JsonModel
-	VERSION 0.0.3
+	VERSION 0.0.4
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
@@ -71,7 +71,7 @@ set_target_properties(QJsonModel PROPERTIES
 	POSITION_INDEPENDENT_CODE ON
 )
 
-set(QJsonModel_PUBLIC_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
+set(QJsonModel_PUBLIC_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 #file(MAKE_DIRECTORY ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
 add_custom_target(QJsonModel_copy_include_files
