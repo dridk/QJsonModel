@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
+message(WARNING "MODULE_PATH: ${CMAKE_MODULE_PATH}")
+
 # Additional paths to search for custom and third-party CMake modules
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
@@ -14,7 +16,7 @@ disable_tests_if_subproject()
 #git_setup_submodules()
 
 project(Qt6JsonModel
-	VERSION 0.0.1
+	VERSION 0.0.2
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
@@ -38,7 +40,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 
 # Disable GNU compiler extensions
-set(CMAKE_C_EXTENSIONS OFF)
+oset(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
@@ -62,8 +64,8 @@ qt_add_library(QJsonModel
 OBJECT
 	QJsonModel.cpp
 )
-set_target_properties(QJsonModel PROPERTIES EXPORT_NAME JsonModel)
-add_library(Qt6::JsonModel ALIAS QJsonModel)
+#set_target_properties(QJsonModel PROPERTIES EXPORT_NAME QJsonModel)
+add_library(Qt6::QJsonModel ALIAS QJsonModel)
 
 # Since headers are in the include/ directory, going to handle MOC invocation
 # manually.
