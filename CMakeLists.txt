@@ -15,7 +15,7 @@ disable_tests_if_subproject()
 #git_setup_submodules()
 
 project(Qt6JsonModel
-	VERSION 0.0.2
+	VERSION 0.0.3
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
