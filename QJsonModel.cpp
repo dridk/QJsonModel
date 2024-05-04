@@ -25,214 +25,11 @@
  */
 
 #include "QJsonModel.hpp"
+#include "details/QJsonTreeItem.hpp"
+
 #include <QDebug>
 #include <QFile>
 #include <QFont>
-
-inline bool contains(const QStringList& list, const QString& value)
-{
-	for (auto val : list)
-		if (value.contains(val, Qt::CaseInsensitive))
-			return true;
-
-	return false;
-}
-
-QJsonTreeItem::QJsonTreeItem(QJsonTreeItem* parent)
-{
-	mParent = parent;
-}
-
-QJsonTreeItem::~QJsonTreeItem()
-{
-	qDeleteAll(mChilds);
-}
-
-void QJsonTreeItem::appendChild(QJsonTreeItem* item)
-{
-	mChilds.append(item);
-}
-
-QJsonTreeItem* QJsonTreeItem::child(int row)
-{
-	return mChilds.value(row);
-}
-
-QJsonTreeItem* QJsonTreeItem::parent()
-{
-	return mParent;
-}
-
-int QJsonTreeItem::childCount() const
-{
-	return mChilds.count();
-}
-
-int QJsonTreeItem::row() const
-{
-	if (mParent)
-		return mParent->mChilds.indexOf(const_cast<QJsonTreeItem*>(this)
-		);
-
-	return 0;
-}
-
-void QJsonTreeItem::setKey(const QString& key)
-{
-	mKey = key;
-}
-
-void QJsonTreeItem::setValue(const QVariant& value)
-{
-	mValue = value;
-}
-
-void QJsonTreeItem::setType(const QJsonValue::Type& type)
-{
-	mType = type;
-}
-
-QString QJsonTreeItem::key() const
-{
-	return mKey;
-}
-
-QVariant QJsonTreeItem::value() const
-{
-	return mValue;
-}
-
-QJsonValue::Type QJsonTreeItem::type() const
-{
-	return mType;
-}
-
-QJsonTreeItem* QJsonTreeItem::load(
-    const QJsonValue& value, const QStringList& exceptions, QJsonTreeItem* parent
-)
-{
-	QJsonTreeItem* rootItem = new QJsonTreeItem(parent);
-	rootItem->setKey("root");
-
-	if (value.isObject()) {
-		// Get all QJsonValue childs
-		const QStringList keys =
-		    value.toObject().keys(); // To prevent clazy-range warning
-		for (const QString& key : keys) {
-			if (contains(exceptions, key)) {
-				continue;
-			}
-			QJsonValue jsonValue = value.toObject().value(key);
-			QJsonTreeItem* child =
-			    load(jsonValue, exceptions, rootItem);
-			child->setKey(key);
-			child->setType(jsonValue.type());
-			rootItem->appendChild(child);
-		}
-	} else if (value.isArray()) {
-		// Get all QJsonValue childs
-		int index = 0;
-		const QJsonArray array =
-		    value.toArray(); // To prevent clazy-range warning
-		for (const QJsonValue& jsonValue : array) {
-			QJsonTreeItem* child =
-			    load(jsonValue, exceptions, rootItem);
-			child->setKey(QString::number(index));
-			child->setType(jsonValue.type());
-			rootItem->appendChild(child);
-			++index;
-		}
-	} else {
-		rootItem->setValue(value.toVariant());
-		rootItem->setType(value.type());
-	}
-
-	return rootItem;
-}
-
-//=========================================================================
-
-inline uchar hexdig(uint positiveValue)
-{
-	return (
-	    positiveValue < 0xa ? '0' + positiveValue : 'a' + positiveValue - 0xa
-	);
-}
-
-QByteArray escapedString(const QString& text)
-{
-	QByteArray byteArray(text.length(), Qt::Uninitialized);
-	uchar* cursor =
-	    reinterpret_cast<uchar*>(const_cast<char*>(byteArray.constData()));
-	const uchar* byteArrayEnd = cursor + byteArray.length();
-	const ushort* src = reinterpret_cast<const ushort*>(text.constBegin());
-	const ushort* const end =
-	    reinterpret_cast<const ushort*>(text.constEnd());
-	while (src != end) {
-		if (cursor >= byteArrayEnd - 6) {
-			// ensure we have enough space
-			int pos = cursor - reinterpret_cast<const uchar*>(
-					       byteArray.constData()
-					   );
-			byteArray.resize(byteArray.size() * 2);
-			cursor =
-			    reinterpret_cast<uchar*>(byteArray.data()) + pos;
-			byteArrayEnd =
-			    reinterpret_cast<const uchar*>(byteArray.constData()
-			    ) +
-			    byteArray.length();
-		}
-		uint uValue = *src++; // uValue = unsigned value
-		if (uValue < 0x80) {
-			if (uValue < 0x20 || uValue == 0x22 || uValue == 0x5c) {
-				*cursor++ = '\\';
-				switch (uValue) {
-					case 0x22:
-						*cursor++ = '"';
-						break;
-					case 0x5c:
-						*cursor++ = '\\';
-						break;
-					case 0x8:
-						*cursor++ = 'b';
-						break;
-					case 0xc:
-						*cursor++ = 'f';
-						break;
-					case 0xa:
-						*cursor++ = 'n';
-						break;
-					case 0xd:
-						*cursor++ = 'r';
-						break;
-					case 0x9:
-						*cursor++ = 't';
-						break;
-					default:
-						*cursor++ = 'u';
-						*cursor++ = '0';
-						*cursor++ = '0';
-						*cursor++ = hexdig(uValue >> 4);
-						*cursor++ = hexdig(uValue & 0xf);
-				}
-			} else {
-				*cursor++ = static_cast<uchar>(uValue);
-			}
-		} else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(uValue, cursor, src, end) < 0) {
-			// failed to get valid utf8 use JSON escape sequence
-			*cursor++ = '\\';
-			*cursor++ = 'u';
-			*cursor++ = hexdig(uValue >> 12 & 0x0f);
-			*cursor++ = hexdig(uValue >> 8 & 0x0f);
-			*cursor++ = hexdig(uValue >> 4 & 0x0f);
-			*cursor++ = hexdig(uValue & 0x0f);
-		}
-	}
-	byteArray.resize(
-	    cursor - reinterpret_cast<const uchar*>(byteArray.constData())
-	);
-	return byteArray;
-}
 
 QJsonModel::QJsonModel(QObject* parent)
     : QAbstractItemModel(parent), mRootItem{ new QJsonTreeItem }
@@ -585,33 +382,33 @@ QJsonValue QJsonModel::genJson(QJsonTreeItem* item) const
 	int nchild = item->childCount();
 
 	if (QJsonValue::Object == type) {
-		QJsonObject jo;
+		QJsonObject jsonObj;
 		for (int i = 0; i < nchild; ++i) {
-			auto ch = item->child(i);
-			auto key = ch->key();
-			jo.insert(key, genJson(ch));
+			auto child = item->child(i);
+			auto key = child->key();
+			jsonObj.insert(key, genJson(child));
 		}
-		return jo;
+		return jsonObj;
 	} else if (QJsonValue::Array == type) {
 		QJsonArray arr;
 		for (int i = 0; i < nchild; ++i) {
-			auto ch = item->child(i);
-			arr.append(genJson(ch));
+			auto child = item->child(i);
+			arr.append(genJson(child));
 		}
 		return arr;
 	} else {
-		QJsonValue va;
+		QJsonValue value;
 		switch (item->value().typeId()) {
 			case QMetaType::Bool: {
-				va = item->value().toBool();
+				value = item->value().toBool();
 				break;
 			}
 			default:
-				va = item->value().toString();
+				value = item->value().toString();
 				break;
 		}
 		(item->value());
-		return va;
+		return value;
 	}
 }
 // clang-format off

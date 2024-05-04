@@ -36,38 +36,7 @@
 
 class QJsonModel;
 class QJsonItem;
-
-class QJsonTreeItem {
-    public:
-	QJsonTreeItem(QJsonTreeItem* parent = nullptr);
-	~QJsonTreeItem();
-	void appendChild(QJsonTreeItem* item);
-	QJsonTreeItem* child(int row);
-	QJsonTreeItem* parent();
-	int childCount() const;
-	int row() const;
-	void setKey(const QString& key);
-	void setValue(const QVariant& value);
-	void setType(const QJsonValue::Type& type);
-	QString key() const;
-	QVariant value() const;
-	QJsonValue::Type type() const;
-
-	static QJsonTreeItem* load(
-	    const QJsonValue& value, const QStringList& exceptions = {},
-	    QJsonTreeItem* parent = nullptr
-	);
-
-    protected:
-    private:
-	QString mKey;
-	QVariant mValue;
-	QJsonValue::Type mType;
-	QList<QJsonTreeItem*> mChilds;
-	QJsonTreeItem* mParent = nullptr;
-};
-
-//---------------------------------------------------
+class QJsonTreeItem;
 
 class QJsonModel : public QAbstractItemModel {
 	// NOLINTNEXTLINE
@@ -124,6 +93,89 @@ class QJsonModel : public QAbstractItemModel {
 	//! "contains".
 	QStringList mExceptions;
 };
+
+inline uchar hexdig(uint positiveValue)
+{
+	return (
+	    positiveValue < 0xa ? '0' + positiveValue : 'a' + positiveValue - 0xa
+	);
+}
+
+inline QByteArray escapedString(const QString& text)
+{
+	QByteArray byteArray(text.length(), Qt::Uninitialized);
+	uchar* cursor =
+	    reinterpret_cast<uchar*>(const_cast<char*>(byteArray.constData()));
+	const uchar* byteArrayEnd = cursor + byteArray.length();
+	const ushort* src = reinterpret_cast<const ushort*>(text.constBegin());
+	const ushort* const kend =
+	    reinterpret_cast<const ushort*>(text.constEnd());
+	while (src != kend) {
+		if (cursor >= byteArrayEnd - 6) {
+			// ensure we have enough space
+			int pos = cursor - reinterpret_cast<const uchar*>(
+					       byteArray.constData()
+					   );
+			byteArray.resize(byteArray.size() * 2);
+			cursor =
+			    reinterpret_cast<uchar*>(byteArray.data()) + pos;
+			byteArrayEnd =
+			    reinterpret_cast<const uchar*>(byteArray.constData()
+			    ) +
+			    byteArray.length();
+		}
+		uint uValue = *src++; // uValue = unsigned value
+		if (uValue < 0x80) {
+			if (uValue < 0x20 || uValue == 0x22 || uValue == 0x5c) {
+				*cursor++ = '\\';
+				switch (uValue) {
+					case 0x22:
+						*cursor++ = '"';
+						break;
+					case 0x5c:
+						*cursor++ = '\\';
+						break;
+					case 0x8:
+						*cursor++ = 'b';
+						break;
+					case 0xc:
+						*cursor++ = 'f';
+						break;
+					case 0xa:
+						*cursor++ = 'n';
+						break;
+					case 0xd:
+						*cursor++ = 'r';
+						break;
+					case 0x9:
+						*cursor++ = 't';
+						break;
+					default:
+						*cursor++ = 'u';
+						*cursor++ = '0';
+						*cursor++ = '0';
+						*cursor++ = hexdig(uValue >> 4);
+						*cursor++ = hexdig(uValue & 0xf);
+				}
+			} else {
+				*cursor++ = static_cast<uchar>(uValue);
+			}
+		} else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(uValue, cursor, src, kend) < 0) {
+			// failed to get valid utf8 use JSON escape sequence
+			*cursor++ = '\\';
+			*cursor++ = 'u';
+			*cursor++ = hexdig(uValue >> 12 & 0x0f);
+			*cursor++ = hexdig(uValue >> 8 & 0x0f);
+			*cursor++ = hexdig(uValue >> 4 & 0x0f);
+			*cursor++ = hexdig(uValue & 0x0f);
+		}
+	}
+	byteArray.resize(
+	    cursor - reinterpret_cast<const uchar*>(byteArray.constData())
+	);
+	return byteArray;
+}
+
 
 // clang-format off
 // vim: set foldmethod=syntax foldminlines=10 textwidth=80 ts=8 sts=0 sw=8 noexpandtab ft=cpp.doxygen :

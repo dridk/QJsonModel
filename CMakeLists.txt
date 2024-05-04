@@ -61,6 +61,7 @@ endif()
 
 qt_add_library(QJsonModel OBJECT
 	QJsonModel.cpp
+	QJsonTreeItem.cpp
 )
 
 
