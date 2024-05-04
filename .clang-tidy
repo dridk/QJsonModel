@@ -63,8 +63,8 @@ CheckOptions:
 	- { key: readability-identifier-naming.PrivateMemberCase,  value: camelBack }
 
 	# Constants and Enum Values
-	#- { key: readability-identifier-naming.ConstantPrefix,   value: 'k' }
-	- { key: readability-identifier-naming.ConstantCase,     value: camelBack }
+	- { key: readability-identifier-naming.ConstantPrefix,   value: 'k' }
+	- { key: readability-identifier-naming.ConstantCase,     value: CamelBack }
 
 	- { key: readability-identifier-naming.EnumConstantPrefix, value: '' }
 	- { key: readability-identifier-naming.EnumConstantCase,   value: CamelCase }

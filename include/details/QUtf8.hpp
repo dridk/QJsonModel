@@ -30,97 +30,104 @@ namespace QUtf8Functions {
 /// if \a u is a high surrogate, Error if the next isn't a low one,
 /// EndOfString if we run into the end of the string.
 template<typename Traits, typename OutputPtr, typename InputPtr>
-inline int toUtf8(ushort u, OutputPtr& dst, InputPtr& src, InputPtr end)
+inline int
+toUtf8(ushort unicodeChar, OutputPtr& dst, InputPtr& src, InputPtr end)
 {
-	if (!Traits::skipAsciiHandling && u < 0x80) {
+	if (!Traits::kSkipAsciiHandling && unicodeChar < 0x80) {
 		// U+0000 to U+007F (US-ASCII) - one byte
-		Traits::appendByte(dst, uchar(u));
+		Traits::appendByte(dst, static_cast<uchar>(unicodeChar));
 		return 0;
-	} else if (u < 0x0800) {
+	} else if (unicodeChar < 0x0800) {
 		// U+0080 to U+07FF - two bytes
 		// first of two bytes
-		Traits::appendByte(dst, 0xc0 | uchar(u >> 6));
+		Traits::appendByte(
+		    dst, 0xc0 | static_cast<uchar>(unicodeChar >> 6)
+		);
 	} else {
-		if (!QChar::isSurrogate(u)) {
+		if (!QChar::isSurrogate(unicodeChar)) {
 			// U+0800 to U+FFFF (except U+D800-U+DFFF) - three bytes
-			if (!Traits::allowNonCharacters &&
-			    QChar::isNonCharacter(u))
-				return Traits::Error;
+			if (!Traits::kAllowNonCharacters &&
+			    QChar::isNonCharacter(unicodeChar))
+				return Traits::kError;
 			// first of three bytes
-			Traits::appendByte(dst, 0xe0 | uchar(u >> 12));
+			Traits::appendByte(
+			    dst, 0xe0 | static_cast<uchar>(unicodeChar >> 12)
+			);
 		} else {
 			// U+10000 to U+10FFFF - four bytes
 			// need to get one extra codepoint
 			if (Traits::availableUtf16(src, end) == 0)
-				return Traits::EndOfString;
+				return Traits::kEndOfString;
 			ushort low = Traits::peekUtf16(src);
-			if (!QChar::isHighSurrogate(u))
-				return Traits::Error;
+			if (!QChar::isHighSurrogate(unicodeChar))
+				return Traits::kError;
 			if (!QChar::isLowSurrogate(low))
-				return Traits::Error;
+				return Traits::kError;
 			Traits::advanceUtf16(src);
-			uint ucs4 = QChar::surrogateToUcs4(u, low);
-			if (!Traits::allowNonCharacters &&
+			uint ucs4 = QChar::surrogateToUcs4(unicodeChar, low);
+			if (!Traits::kAllowNonCharacters &&
 			    QChar::isNonCharacter(ucs4))
-				return Traits::Error;
+				return Traits::kError;
 			// first byte
 			Traits::appendByte(
-			    dst, 0xf0 | (uchar(ucs4 >> 18) & 0xf)
+			    dst, 0xf0 | (static_cast<uchar>(ucs4 >> 18) & 0xf)
 			);
 			// second of four bytes
 			Traits::appendByte(
-			    dst, 0x80 | (uchar(ucs4 >> 12) & 0x3f)
+			    dst, 0x80 | (static_cast<uchar>(ucs4 >> 12) & 0x3f)
 			);
 			// for the rest of the bytes
-			u = ushort(ucs4);
+			unicodeChar = static_cast<ushort>(ucs4);
 		}
 		// second to last byte
-		Traits::appendByte(dst, 0x80 | (uchar(u >> 6) & 0x3f));
+		Traits::appendByte(
+		    dst, 0x80 | (static_cast<uchar>(unicodeChar >> 6) & 0x3f)
+		);
 	}
 	// last byte
-	Traits::appendByte(dst, 0x80 | (u & 0x3f));
+	Traits::appendByte(dst, 0x80 | (unicodeChar & 0x3f));
 	return 0;
 }
-inline bool isContinuationByte(uchar b)
+inline bool isContinuationByte(uchar byte)
 {
-	return (b & 0xc0) == 0x80;
+	return (byte & 0xc0) == 0x80;
 }
 /// returns the number of characters consumed (including \a b) in case of
-/// success; returns negative in case of error: Traits::Error or
-/// Traits::EndOfString
+/// success; returns negative in case of error: Traits::kError or
+/// Traits::kEndOfString
 template<typename Traits, typename OutputPtr, typename InputPtr>
-inline int fromUtf8(uchar b, OutputPtr& dst, InputPtr& src, InputPtr end)
+inline int fromUtf8(uchar byte, OutputPtr& dst, InputPtr& src, InputPtr end)
 {
 	int charsNeeded;
-	uint min_uc;
-	uint uc;
-	if (!Traits::skipAsciiHandling && b < 0x80) {
+	uint minUChar;
+	uint unicodeChar;
+	if (!Traits::skipAsciiHandling && byte < 0x80) {
 		// US-ASCII
-		Traits::appendUtf16(dst, b);
+		Traits::appendUtf16(dst, byte);
 		return 1;
 	}
-	if (!Traits::isTrusted && Q_UNLIKELY(b <= 0xC1)) {
+	if (!Traits::isTrusted && Q_UNLIKELY(byte <= 0xC1)) {
 		// an UTF-8 first character must be at least 0xC0
 		// however, all 0xC0 and 0xC1 first bytes can only produce
 		// overlong sequences
-		return Traits::Error;
-	} else if (b < 0xe0) {
+		return Traits::kError;
+	} else if (byte < 0xe0) {
 		charsNeeded = 2;
-		min_uc = 0x80;
-		uc = b & 0x1f;
-	} else if (b < 0xf0) {
+		minUChar = 0x80;
+		unicodeChar = byte & 0x1f;
+	} else if (byte < 0xf0) {
 		charsNeeded = 3;
-		min_uc = 0x800;
-		uc = b & 0x0f;
-	} else if (b < 0xf5) {
+		minUChar = 0x800;
+		unicodeChar = byte & 0x0f;
+	} else if (byte < 0xf5) {
 		charsNeeded = 4;
-		min_uc = 0x10000;
-		uc = b & 0x07;
+		minUChar = 0x10000;
+		unicodeChar = byte & 0x07;
 	} else {
 		// the last Unicode character is U+10FFFF
 		// it's encoded in UTF-8 as "\xF4\x8F\xBF\xBF"
 		// therefore, a byte higher than 0xF4 is not the UTF-8 first byte
-		return Traits::Error;
+		return Traits::kError;
 	}
 	int bytesAvailable = Traits::availableBytes(src, end);
 	if (Q_UNLIKELY(bytesAvailable < charsNeeded - 1)) {
@@ -128,51 +135,53 @@ inline int fromUtf8(uchar b, OutputPtr& dst, InputPtr& src, InputPtr end)
 		// bytes
 		if (bytesAvailable > 0 &&
 		    !isContinuationByte(Traits::peekByte(src, 0)))
-			return Traits::Error;
+			return Traits::kError;
 		if (bytesAvailable > 1 &&
 		    !isContinuationByte(Traits::peekByte(src, 1)))
-			return Traits::Error;
-		return Traits::EndOfString;
+			return Traits::kError;
+		return Traits::kEndOfString;
 	}
 	// first continuation character
-	b = Traits::peekByte(src, 0);
-	if (!isContinuationByte(b))
-		return Traits::Error;
-	uc <<= 6;
-	uc |= b & 0x3f;
+	byte = Traits::peekByte(src, 0);
+	if (!isContinuationByte(byte))
+		return Traits::kError;
+	unicodeChar <<= 6;
+	unicodeChar |= byte & 0x3f;
 	if (charsNeeded > 2) {
 		// second continuation character
-		b = Traits::peekByte(src, 1);
-		if (!isContinuationByte(b))
-			return Traits::Error;
-		uc <<= 6;
-		uc |= b & 0x3f;
+		byte = Traits::peekByte(src, 1);
+		if (!isContinuationByte(byte))
+			return Traits::kError;
+		unicodeChar <<= 6;
+		unicodeChar |= byte & 0x3f;
 		if (charsNeeded > 3) {
 			// third continuation character
-			b = Traits::peekByte(src, 2);
-			if (!isContinuationByte(b))
-				return Traits::Error;
-			uc <<= 6;
-			uc |= b & 0x3f;
+			byte = Traits::peekByte(src, 2);
+			if (!isContinuationByte(byte))
+				return Traits::kError;
+			unicodeChar <<= 6;
+			unicodeChar |= byte & 0x3f;
 		}
 	}
 	// we've decoded something; safety-check it
 	if (!Traits::isTrusted) {
-		if (uc < min_uc)
-			return Traits::Error;
-		if (QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint)
-			return Traits::Error;
-		if (!Traits::allowNonCharacters && QChar::isNonCharacter(uc))
-			return Traits::Error;
+		if (unicodeChar < minUChar)
+			return Traits::kError;
+		if (QChar::isSurrogate(unicodeChar) ||
+		    unicodeChar > QChar::LastValidCodePoint)
+			return Traits::kError;
+		if (!Traits::kAllowNonCharacters &&
+		    QChar::isNonCharacter(unicodeChar))
+			return Traits::kError;
 	}
 	// write the UTF-16 sequence
-	if (!QChar::requiresSurrogates(uc)) {
+	if (!QChar::requiresSurrogates(unicodeChar)) {
 		// UTF-8 decoded and no surrogates are required
 		// detach if necessary
-		Traits::appendUtf16(dst, ushort(uc));
+		Traits::appendUtf16(dst, static_cast<ushort>(unicodeChar));
 	} else {
 		// UTF-8 decoded to something that requires a surrogate pair
-		Traits::appendUcs4(dst, uc);
+		Traits::appendUcs4(dst, unicodeChar);
 	}
 	Traits::advanceByte(src, charsNeeded - 1);
 	return charsNeeded;
@@ -180,11 +189,11 @@ inline int fromUtf8(uchar b, OutputPtr& dst, InputPtr& src, InputPtr end)
 } // namespace QUtf8Functions
 
 struct QUtf8BaseTraits {
-	static const bool isTrusted = false;
-	static const bool allowNonCharacters = true;
-	static const bool skipAsciiHandling = false;
-	static const int error = -1;
-	static const int endOfString = -2;
+	static const bool kIsTrusted = false;
+	static const bool kAllowNonCharacters = true;
+	static const bool kSkipAsciiHandling = false;
+	static const int kError = -1;
+	static const int kEndOfString = -2;
 	static bool isValidCharacter(uint unsignedInt)
 	{
 		return static_cast<int>(unsignedInt) >= 0;

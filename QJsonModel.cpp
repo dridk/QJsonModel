@@ -123,7 +123,8 @@ QJsonTreeItem* QJsonTreeItem::load(
 				continue;
 			}
 			QJsonValue jsonValue = value.toObject().value(key);
-			QJsonTreeItem* child = load(jsonValue, exceptions, rootItem);
+			QJsonTreeItem* child =
+			    load(jsonValue, exceptions, rootItem);
 			child->setKey(key);
 			child->setType(jsonValue.type());
 			rootItem->appendChild(child);
