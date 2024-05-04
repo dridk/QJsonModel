@@ -1,0 +1,41 @@
+---
+BasedOnStyle: Mozilla
+Language: Cpp
+
+IndentWidth: 8
+UseTab: AlignWithSpaces
+ColumnLimit: 81
+AccessModifierOffset: -4
+BinPackParameters: true
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 50
+ContinuationIndentWidth: 4
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+AllowAllArgumentsOnNextLine: true
+AlignAfterOpenBracket: BlockIndent
+
+BreakBeforeBraces:  WebKit
+#BraceWrapping:
+#  AfterCaseLabel:  false
+#  AfterClass:      true
+#  AfterControlStatement:  MultiLine
+#  AfterEnum:       false
+#  AfterFunction:   true
+#  AfterNamespace:  false
+#  AfterObjCDeclaration: false
+#  AfterStruct:     true
+#  AfterUnion:      true
+#  AfterExternBlock: false
+#
+#  BeforeCatch:     true
+#  BeforeElse:      false
+#  BeforeLambdaBody: false
+#  BeforeWhile:     false
+#  IndentBraces:    false
+#  SplitEmptyFunction: true
+#  SplitEmptyRecord: false
+#  SplitEmptyNamespace: true
+#
+---

@@ -1,0 +1,79 @@
+HeaderFilterRegex: '.*hpp'
+Checks: '-*,readability-identifier-naming,readability-identifier-length,readability-function-cognitive-complexity,google-readability-casting,-modernize-use-trailing-return-type,modernize-use-default-member-init,modernize-use-uncaught-exceptions,modernize-type-traits,modernize-use-override,misc-non-copyable-objects'
+
+CheckOptions:
+	# Modernize constructors
+	- { key: modernize-use-default-member-init.UseAssignment, value : false}
+	- { key: modernize-use-default-member-init.IgnoreMacros, value : false}
+
+	# Warn about complex functions
+	- { key: readability-function-cognitive-complexity.Threshold, value: 10 }
+	- { key: readability-function-cognitive-complexity.DescribeBasicIncrements, value: true }
+	- { key: readability-function-cognitive-complexity.IgnoreMacros, value: true }
+
+	# Minimum Variable Length
+	- { key: readability-identifier-length.MinimumVariableNameLength, value: 3 }
+	- { key: readability-identifier-length.IgnoredVariableNames, value: "^(i|j|n|it)$" }
+
+	# Minimum Parameter Length
+	- { key: readability-identifier-length.MinimumParameterNameLength, value: 3 }
+	- { key: readability-identifier-length.IgnoredParameterNames, value: "^(i|j|n|it)$" }
+
+	# Minimum Loop Counter Length
+	- { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 3 }
+	- { key: readability-identifier-length.IgnoredLoopCounterNames, value: "^(i|j|n|it)$" }
+
+	# Minimum ExceptionName Length:
+	- { key: readability-identifier-length.MinimumExceptionNameLength, value: 3 }
+	- { key: readability-identifier-length.IgnoredExceptionVariableNames, value: "^[e]$" }
+
+	# Class Names
+	- { key: readability-identifier-naming.ClassCase,  value: CamelCase }
+	- { key: readability-identifier-naming.StructCase, value: CamelCase }
+	- { key: readability-identifier-naming.EnumCase,   value: CamelCase }
+
+	- { key: readability-identifier-naming.EnumIgnoredRegexp,  value: '^.*_t$' }
+
+	# Abstract Class Name
+	# - { key: readability-identifier-naming.AbstractClassPrefix,value: 'I' }
+	# - { key: readability-identifier-naming.AbstractClassIgnoredRegexp,
+	#	value: '^.*able$|^.*Base$|^Abstract.*|^Component$' }
+
+	# Template Parameters
+	- { key: readability-identifier-naming.TypeTemplateParameterPrefix,
+		value: '' }
+	- { key: readability-identifier-naming.TypeTemplateParameterSuffix,
+	value: '' }
+	- { key: readability-identifier-naming.TypeTemplateParameterCase,
+	value: CamelCase }
+	- { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: "^T$" }
+
+	#  TypeAlias Rules
+	- { key: readability-identifier-naming.TypeAliasCase,         value: CamelCase }
+	- { key: readability-identifier-naming.TypeAliasIgnoredRegexp,
+		value: '.*_t|string|.*_string' }
+
+	# Function Names
+	- { key: readability-identifier-naming.FunctionCase,       value: camelBack }
+	- { key: readability-identifier-naming.PublicMethodCase,   value: camelBack }
+	- { key: readability-identifier-naming.PrivateMethodCase,  value: camelBack }
+
+	# Variable Names
+	- { key: readability-identifier-naming.VariableCase,       value: camelBack }
+	- { key: readability-identifier-naming.PrivateMemberCase,  value: camelBack }
+
+	# Constants and Enum Values
+	#- { key: readability-identifier-naming.ConstantPrefix,   value: 'k' }
+	- { key: readability-identifier-naming.ConstantCase,     value: camelBack }
+
+	- { key: readability-identifier-naming.EnumConstantPrefix, value: '' }
+	- { key: readability-identifier-naming.EnumConstantCase,   value: CamelCase }
+
+	# Constant Expression
+	- { key: readability-identifier-naming.ConstexprVariablePrefix, value: 'k' }
+	- { key: readability-identifier-naming.ConstexprVariableCase,   value: Camel_Snake_Case }
+
+	- { key: readability-identifier-naming.ConstexprFunctionCase, value: Camel_Snake_Case }
+	- { key: readability-identifier-naming.ConstexprMethodCase,   value: Camel_Snake_Case }
+
+# vim: set ts=4 noet sw=4 sts=0 colorcolumn=100 :
