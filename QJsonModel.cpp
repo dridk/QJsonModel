@@ -57,6 +57,7 @@ QJsonModel::QJsonModel(
 {
 	headers.append("key");
 	headers.append("value");
+
 	load(fileName);
 }
 
@@ -91,13 +92,13 @@ QJsonModel::~QJsonModel()
 ErrorFlag QJsonModel::load(const QString& fileName)
 {
 	QFile file(fileName);
-	ErrorFlag result = false;
+	ErrorFlag result = kSuccess;
 
 	if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		result = load(&file);
 		file.close();
 	} else {
-		result = true;
+		result = kError;
 	}
 
 	return result;
@@ -129,11 +130,11 @@ ErrorFlag QJsonModel::loadJson(const QByteArray& json)
 			rootItem->setType(QJsonValue::Object);
 		}
 		endResetModel();
-		return false;
+		return kSuccess;
 	}
 
 	qDebug() << Q_FUNC_INFO << "cannot load json";
-	return true;
+	return kError;
 }
 
 QVariant QJsonModel::data(const QModelIndex& index, int role) const
@@ -267,13 +268,13 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex& index) const
 	auto result = QAbstractItemModel::flags(index);
 
 	if (column == kKeyColumn) {
-		if (this->editMode & FieldPermissions::WritableKey) {
+		if (this->editMode & FieldPermissions::kWritableKey) {
 			result = result | Qt::ItemIsEditable;
 		}
 	}
 	if (!isArray && !isObject) {
 		if (column == kValueColumn) {
-			if (this->editMode & FieldPermissions::WritableValue) {
+			if (this->editMode & FieldPermissions::kWritableValue) {
 				result = result | Qt::ItemIsEditable;
 			}
 		}

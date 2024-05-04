@@ -37,7 +37,6 @@
 class QJsonModel;
 class QJsonItem;
 class QJsonTreeItem;
-class QFile;
 
 class QJsonModel : public QAbstractItemModel {
 	// NOLINTNEXTLINE
