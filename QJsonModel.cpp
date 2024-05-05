@@ -32,7 +32,9 @@
 #include <QFont>
 
 namespace {
+
 using FieldPermissions = QJsonModel::FieldPermissions;
+using ErrorFlag = QJsonModel::ErrorFlag;
 
 constexpr int kKeyColumn = 0;
 constexpr int kValueColumn = 1;
@@ -86,27 +88,28 @@ QJsonModel::~QJsonModel()
 	delete rootItem;
 }
 
-bool QJsonModel::load(const QString& fileName)
+ErrorFlag QJsonModel::load(const QString& fileName)
 {
 	QFile file(fileName);
-	bool success = false;
+	ErrorFlag result = false;
+
 	if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		success = load(&file);
+		result = load(&file);
 		file.close();
 	} else {
-		success = false;
+		result = true;
 	}
 
-	return success;
+	return result;
 }
 
-bool QJsonModel::load(QIODevice* device)
+ErrorFlag QJsonModel::load(QIODevice* device)
 {
 	QTextStream content(device);
 	return loadJson(content.readAll().toUtf8());
 }
 
-bool QJsonModel::loadJson(const QByteArray& json)
+ErrorFlag QJsonModel::loadJson(const QByteArray& json)
 {
 	auto const& jdoc = QJsonDocument::fromJson(json);
 

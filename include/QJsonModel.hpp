@@ -69,9 +69,10 @@ class QJsonModel : public QAbstractItemModel {
 
 	~QJsonModel() override;
 
-	bool load(const QString& fileName);
-	bool load(QIODevice* file);
-	bool loadJson(const QByteArray& json);
+	using ErrorFlag = bool;
+	ErrorFlag load(const QString& fileName);
+	ErrorFlag load(QIODevice* file);
+	ErrorFlag loadJson(const QByteArray& json);
 	QVariant data(const QModelIndex& index, int role) const override;
 	bool setData(
 	    const QModelIndex& index, const QVariant& value,
