@@ -26,6 +26,7 @@
 
 #pragma once
 
+
 #include <QAbstractItemModel>
 #include <QIcon>
 #include <QJsonArray>
@@ -42,11 +43,19 @@ class QJsonModel : public QAbstractItemModel {
 	// NOLINTNEXTLINE
 	Q_OBJECT
     public:
-	explicit QJsonModel(QObject* parent = nullptr);
-	QJsonModel(const QString& fileName, QObject* parent = nullptr);
-	QJsonModel(QIODevice* device, QObject* parent = nullptr);
-	QJsonModel(const QByteArray& json, QObject* parent = nullptr);
+	enum FieldPermissions {
+		ReadOnly      = 0b0000,
+		WritableValue = 0b0001,
+		WritableKey   = 0b0010
+	};
+
+	explicit QJsonModel(QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
+	QJsonModel(const QString& fileName, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
+	QJsonModel(QIODevice* device, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
+	QJsonModel(const QByteArray& json, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
+
 	~QJsonModel() override;
+
 	bool load(const QString& fileName);
 	bool load(QIODevice* device);
 	bool loadJson(const QByteArray& json);
@@ -83,16 +92,19 @@ class QJsonModel : public QAbstractItemModel {
 	    QJsonValue jsonValue, QByteArray& json, int indent, bool compact
 	);
 	//! List of tags to skip during JSON parsing
-	void addException(const QStringList& exceptions);
+	void addExclusion(const QStringList& exclusion);
 
     private:
 	QJsonValue genJson(QJsonTreeItem*) const;
-	QJsonTreeItem* mRootItem = nullptr;
-	QStringList mHeaders;
-	//! List of exceptions (e.g. comments). Case insensitive, compairs on
-	//! "contains".
-	QStringList mExceptions;
+	QJsonTreeItem* rootItem = nullptr;
+	QStringList headers;
+
+	FieldPermissions permissions;
+	//! List of line exclusions (e.g. comments).
+	//! Case insensitive, compairs on "contains".
+	QStringList exclusions;
 };
+
 
 inline uchar hexdig(uint positiveValue)
 {
@@ -175,7 +187,6 @@ inline QByteArray escapedString(const QString& text)
 	);
 	return byteArray;
 }
-
 
 // clang-format off
 // vim: set foldmethod=syntax foldminlines=10 textwidth=80 ts=8 sts=0 sw=8 noexpandtab ft=cpp.doxygen :

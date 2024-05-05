@@ -31,40 +31,42 @@
 #include <QFile>
 #include <QFont>
 
-QJsonModel::QJsonModel(QObject* parent)
-    : QAbstractItemModel(parent), mRootItem{ new QJsonTreeItem }
+using FieldPermissions = QJsonModel::FieldPermissions;
+
+QJsonModel::QJsonModel(QObject* parent, FieldPermissions permissions)
+    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
 {
-	mHeaders.append("key");
-	mHeaders.append("value");
+	headers.append("key");
+	headers.append("value");
 }
 
-QJsonModel::QJsonModel(const QString& fileName, QObject* parent)
-    : QAbstractItemModel(parent), mRootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(const QString& fileName, QObject* parent, FieldPermissions permissions)
+    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
 {
-	mHeaders.append("key");
-	mHeaders.append("value");
+	headers.append("key");
+	headers.append("value");
 	load(fileName);
 }
 
-QJsonModel::QJsonModel(QIODevice* device, QObject* parent)
-    : QAbstractItemModel(parent), mRootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(QIODevice* device, QObject* parent, FieldPermissions permissions)
+    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
 {
-	mHeaders.append("key");
-	mHeaders.append("value");
+	headers.append("key");
+	headers.append("value");
 	load(device);
 }
 
-QJsonModel::QJsonModel(const QByteArray& json, QObject* parent)
-    : QAbstractItemModel(parent), mRootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(const QByteArray& json, QObject* parent, FieldPermissions permissions)
+    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
 {
-	mHeaders.append("key");
-	mHeaders.append("value");
+	headers.append("key");
+	headers.append("value");
 	loadJson(json);
 }
 
 QJsonModel::~QJsonModel()
 {
-	delete mRootItem;
+	delete rootItem;
 }
 
 bool QJsonModel::load(const QString& fileName)
@@ -92,18 +94,18 @@ bool QJsonModel::loadJson(const QByteArray& json)
 
 	if (!jdoc.isNull()) {
 		beginResetModel();
-		delete mRootItem;
+		delete rootItem;
 		if (jdoc.isArray()) {
-			mRootItem = QJsonTreeItem::load(
-			    QJsonValue(jdoc.array()), mExceptions
+			rootItem = QJsonTreeItem::load(
+			    QJsonValue(jdoc.array()), exclusions
 			);
-			mRootItem->setType(QJsonValue::Array);
+			rootItem->setType(QJsonValue::Array);
 
 		} else {
-			mRootItem = QJsonTreeItem::load(
-			    QJsonValue(jdoc.object()), mExceptions
+			rootItem = QJsonTreeItem::load(
+			    QJsonValue(jdoc.object()), exclusions
 			);
-			mRootItem->setType(QJsonValue::Object);
+			rootItem->setType(QJsonValue::Object);
 		}
 		endResetModel();
 		return true;
@@ -141,6 +143,13 @@ bool QJsonModel::setData(
 {
 	int col = index.column();
 	if (Qt::EditRole == role) {
+  		if (col == 0) {
+			QJsonTreeItem* item =
+			    static_cast<QJsonTreeItem*>(index.internalPointer());
+			item->setKey(value.toString());
+			emit dataChanged(index, index, { Qt::EditRole });
+			return true;
+		}
 		if (col == 1) {
 			QJsonTreeItem* item =
 			    static_cast<QJsonTreeItem*>(index.internalPointer());
@@ -160,7 +169,7 @@ QJsonModel::headerData(int section, Qt::Orientation orientation, int role) const
 		return {};
 
 	if (orientation == Qt::Horizontal)
-		return mHeaders.value(section);
+		return headers.value(section);
 	else
 		return {};
 }
@@ -174,7 +183,7 @@ QJsonModel::index(int row, int column, const QModelIndex& parent) const
 	QJsonTreeItem* parentItem;
 
 	if (!parent.isValid())
-		parentItem = mRootItem;
+		parentItem = rootItem;
 	else
 		parentItem =
 		    static_cast<QJsonTreeItem*>(parent.internalPointer());
@@ -195,7 +204,7 @@ QModelIndex QJsonModel::parent(const QModelIndex& index) const
 	    static_cast<QJsonTreeItem*>(index.internalPointer());
 	QJsonTreeItem* parentItem = childItem->parent();
 
-	if (parentItem == mRootItem)
+	if (parentItem == rootItem)
 		return QModelIndex();
 
 	return createIndex(parentItem->row(), 0, parentItem);
@@ -208,7 +217,7 @@ int QJsonModel::rowCount(const QModelIndex& parent) const
 		return 0;
 
 	if (!parent.isValid())
-		parentItem = mRootItem;
+		parentItem = rootItem;
 	else
 		parentItem =
 		    static_cast<QJsonTreeItem*>(parent.internalPointer());
@@ -230,7 +239,7 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex& index) const
 	auto isArray = QJsonValue::Array == item->type();
 	auto isObject = QJsonValue::Object == item->type();
 
-	if ((col == 1) && !(isArray || isObject))
+	if (!(isArray || isObject))
 		return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 	else
 		return QAbstractItemModel::flags(index);
@@ -238,7 +247,7 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex& index) const
 
 QByteArray QJsonModel::json(bool compact)
 {
-	auto jsonValue = genJson(mRootItem);
+	auto jsonValue = genJson(rootItem);
 	QByteArray json;
 	if (jsonValue.isNull())
 		return json;
@@ -327,10 +336,10 @@ void QJsonModel::valueToJson(
 			json += jsonValue.toBool() ? "true" : "false";
 			break;
 		case QJsonValue::Double: {
-			const double value = jsonValue.toDouble();
-			if (qIsFinite(value)) {
+			const double kvalue = jsonValue.toDouble();
+			if (qIsFinite(kvalue)) {
 				json += QByteArray::number(
-				    value, 'f', QLocale::FloatingPointShortest
+				    kvalue, 'f', QLocale::FloatingPointShortest
 				);
 			} else {
 				json += "null"; // +INF || -INF || NaN (see
@@ -371,9 +380,9 @@ void QJsonModel::valueToJson(
 	}
 }
 
-void QJsonModel::addException(const QStringList& exceptions)
+void QJsonModel::addExclusion(const QStringList& exclusions)
 {
-	mExceptions = exceptions;
+	this->exclusions = exclusions;
 }
 
 QJsonValue QJsonModel::genJson(QJsonTreeItem* item) const
@@ -412,4 +421,4 @@ QJsonValue QJsonModel::genJson(QJsonTreeItem* item) const
 	}
 }
 // clang-format off
-// vim: set foldmethod=syntax foldminlines=10 textwidth=80 ts=4 sts=0 sw=8 noexpandtab ft=cpp.doxygen :
+// vim: set foldmethod=syntax foldlevel=99 foldminlines=10 textwidth=80 ts=4 sts=0 sw=4 noexpandtab ft=cpp.doxygen :

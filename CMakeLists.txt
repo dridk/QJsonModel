@@ -8,7 +8,6 @@ include(BuildProperties)
 
 prevent_in_source_build()
 disable_deprecated_features()
-
 # When this package is included as a subproject, there's no need to
 # build and run the unit-tests.
 disable_tests_if_subproject()
