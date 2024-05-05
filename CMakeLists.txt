@@ -13,8 +13,8 @@ disable_deprecated_features()
 disable_tests_if_subproject()
 #git_setup_submodules()
 
-project(Qt6JsonModel
-	VERSION 0.0.4
+project(QJsonModel
+	VERSION 0.0.5
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
