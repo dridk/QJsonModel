@@ -31,33 +31,50 @@
 #include <QFile>
 #include <QFont>
 
+namespace {
 using FieldPermissions = QJsonModel::FieldPermissions;
 
+constexpr int kKeyColumn = 0;
+constexpr int kValueColumn = 1;
+}
 QJsonModel::QJsonModel(QObject* parent, FieldPermissions permissions)
-    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
+    : QAbstractItemModel(parent)
+    , rootItem{ new QJsonTreeItem }
+    , editMode(permissions)
 {
 	headers.append("key");
 	headers.append("value");
 }
 
-QJsonModel::QJsonModel(const QString& fileName, QObject* parent, FieldPermissions permissions)
-    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(
+    const QString& fileName, QObject* parent, FieldPermissions permissions
+)
+    : QAbstractItemModel(parent)
+    , rootItem{ new QJsonTreeItem }
+    , editMode(permissions)
 {
 	headers.append("key");
 	headers.append("value");
 	load(fileName);
 }
 
-QJsonModel::QJsonModel(QIODevice* device, QObject* parent, FieldPermissions permissions)
-    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(
+    QIODevice* device, QObject* parent, FieldPermissions permissions
+)
+    : QAbstractItemModel(parent)
+    , rootItem{ new QJsonTreeItem }
+    , editMode(permissions)
 {
 	headers.append("key");
 	headers.append("value");
-	load(device);
 }
 
-QJsonModel::QJsonModel(const QByteArray& json, QObject* parent, FieldPermissions permissions)
-    : QAbstractItemModel(parent), rootItem{ new QJsonTreeItem }
+QJsonModel::QJsonModel(
+    const QByteArray& json, QObject* parent, FieldPermissions permissions
+)
+    : QAbstractItemModel(parent)
+    , rootItem{ new QJsonTreeItem }
+    , editMode(permissions)
 {
 	headers.append("key");
 	headers.append("value");
@@ -73,7 +90,7 @@ bool QJsonModel::load(const QString& fileName)
 {
 	QFile file(fileName);
 	bool success = false;
-	if (file.open(QIODevice::ReadOnly)) {
+	if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		success = load(&file);
 		file.close();
 	} else {
@@ -85,7 +102,8 @@ bool QJsonModel::load(const QString& fileName)
 
 bool QJsonModel::load(QIODevice* device)
 {
-	return loadJson(device->readAll());
+	QTextStream content(device);
+	return loadJson(content.readAll().toUtf8());
 }
 
 bool QJsonModel::loadJson(const QByteArray& json)
@@ -108,11 +126,11 @@ bool QJsonModel::loadJson(const QByteArray& json)
 			rootItem->setType(QJsonValue::Object);
 		}
 		endResetModel();
-		return true;
+		return false;
 	}
 
 	qDebug() << Q_FUNC_INFO << "cannot load json";
-	return false;
+	return true;
 }
 
 QVariant QJsonModel::data(const QModelIndex& index, int role) const
@@ -124,10 +142,10 @@ QVariant QJsonModel::data(const QModelIndex& index, int role) const
 	    static_cast<QJsonTreeItem*>(index.internalPointer());
 
 	if (role == Qt::DisplayRole) {
-		if (index.column() == 0)
+		if (index.column() == kKeyColumn)
 			return QString("%1").arg(item->key());
 
-		if (index.column() == 1)
+		if (index.column() == kValueColumn)
 			return item->value();
 	} else if (Qt::EditRole == role) {
 		if (index.column() == 1)
@@ -143,14 +161,14 @@ bool QJsonModel::setData(
 {
 	int col = index.column();
 	if (Qt::EditRole == role) {
-  		if (col == 0) {
+		if (col == kKeyColumn) {
 			QJsonTreeItem* item =
 			    static_cast<QJsonTreeItem*>(index.internalPointer());
 			item->setKey(value.toString());
 			emit dataChanged(index, index, { Qt::EditRole });
 			return true;
 		}
-		if (col == 1) {
+		if (col == kValueColumn) {
 			QJsonTreeItem* item =
 			    static_cast<QJsonTreeItem*>(index.internalPointer());
 			item->setValue(value);
@@ -233,16 +251,29 @@ int QJsonModel::columnCount(const QModelIndex& parent) const
 
 Qt::ItemFlags QJsonModel::flags(const QModelIndex& index) const
 {
-	int col = index.column();
-	auto item = static_cast<QJsonTreeItem*>(index.internalPointer());
 
+	int column = index.column();
+
+	auto item = static_cast<QJsonTreeItem*>(index.internalPointer());
 	auto isArray = QJsonValue::Array == item->type();
 	auto isObject = QJsonValue::Object == item->type();
 
-	if (!(isArray || isObject))
-		return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-	else
-		return QAbstractItemModel::flags(index);
+	auto result = QAbstractItemModel::flags(index);
+
+	if (!isArray && !isObject) {
+		if (column == kKeyColumn) {
+			if (this->editMode & FieldPermissions::WritableKey) {
+				result = result | Qt::ItemIsEditable;
+			}
+		}
+		if (column == kValueColumn) {
+			if (this->editMode & FieldPermissions::WritableValue) {
+				result = result | Qt::ItemIsEditable;
+			}
+		}
+	}
+
+	return result;
 }
 
 QByteArray QJsonModel::json(bool compact)

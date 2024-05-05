@@ -58,6 +58,9 @@ CheckOptions:
 	- { key: readability-identifier-naming.PublicMethodCase,   value: camelBack }
 	- { key: readability-identifier-naming.PrivateMethodCase,  value: camelBack }
 
+	- { key: readability-identifier-naming.ParameterCase,       value: camelBack }
+	  #- { key: readability-identifier-naming.ParameterHungarianPrefix,   value: On }
+
 	# Variable Names
 	- { key: readability-identifier-naming.VariableCase,       value: camelBack }
 	- { key: readability-identifier-naming.PrivateMemberCase,  value: camelBack }

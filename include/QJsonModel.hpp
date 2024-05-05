@@ -26,7 +26,6 @@
 
 #pragma once
 
-
 #include <QAbstractItemModel>
 #include <QIcon>
 #include <QJsonArray>
@@ -38,26 +37,40 @@
 class QJsonModel;
 class QJsonItem;
 class QJsonTreeItem;
+class QFile;
 
 class QJsonModel : public QAbstractItemModel {
 	// NOLINTNEXTLINE
 	Q_OBJECT
     public:
-	enum FieldPermissions {
+	// clang-format off
+	enum FieldPermissions : unsigned char {
 		ReadOnly      = 0b0000,
 		WritableValue = 0b0001,
 		WritableKey   = 0b0010
-	};
+	}; // clang-format on
 
-	explicit QJsonModel(QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
-	QJsonModel(const QString& fileName, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
-	QJsonModel(QIODevice* device, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
-	QJsonModel(const QByteArray& json, QObject* parent = nullptr, FieldPermissions permissions = WritableValue);
+	explicit QJsonModel(
+	    QObject* parent = nullptr,
+	    FieldPermissions permissions = WritableValue
+	);
+	QJsonModel(
+	    const QString& fileName, QObject* parent = nullptr,
+	    FieldPermissions permissions = WritableValue
+	);
+	QJsonModel(
+	    QIODevice* device, QObject* parent = nullptr,
+	    FieldPermissions permissions = WritableValue
+	);
+	QJsonModel(
+	    const QByteArray& json, QObject* parent = nullptr,
+	    FieldPermissions permissions = WritableValue
+	);
 
 	~QJsonModel() override;
 
 	bool load(const QString& fileName);
-	bool load(QIODevice* device);
+	bool load(QIODevice* file);
 	bool loadJson(const QByteArray& json);
 	QVariant data(const QModelIndex& index, int role) const override;
 	bool setData(
@@ -99,12 +112,11 @@ class QJsonModel : public QAbstractItemModel {
 	QJsonTreeItem* rootItem = nullptr;
 	QStringList headers;
 
-	FieldPermissions permissions;
+	FieldPermissions editMode;
 	//! List of line exclusions (e.g. comments).
 	//! Case insensitive, compairs on "contains".
 	QStringList exclusions;
 };
-
 
 inline uchar hexdig(uint positiveValue)
 {
