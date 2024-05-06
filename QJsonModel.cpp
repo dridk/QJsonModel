@@ -263,12 +263,12 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex& index) const
 
 	auto result = QAbstractItemModel::flags(index);
 
-	if (!isArray && !isObject) {
-		if (column == kKeyColumn) {
-			if (this->editMode & FieldPermissions::WritableKey) {
-				result = result | Qt::ItemIsEditable;
-			}
+	if (column == kKeyColumn) {
+		if (this->editMode & FieldPermissions::WritableKey) {
+			result = result | Qt::ItemIsEditable;
 		}
+	}
+	if (!isArray && !isObject) {
 		if (column == kValueColumn) {
 			if (this->editMode & FieldPermissions::WritableValue) {
 				result = result | Qt::ItemIsEditable;
