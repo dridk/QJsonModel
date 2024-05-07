@@ -159,27 +159,30 @@ QVariant QJsonModel::data(const QModelIndex& index, int role) const
 }
 
 bool QJsonModel::setData(
-    const QModelIndex& index, const QVariant& value, int role
+    const QModelIndex& index, const QVariant& data, int role
 )
 {
 	int col = index.column();
 	if (Qt::EditRole == role) {
 		if (col == kKeyColumn) {
+			auto unboxedValue = data.value<QString>();
+			if (unboxedValue.isEmpty()) {
+				return false;
+			}
 			QJsonTreeItem* item =
 			    static_cast<QJsonTreeItem*>(index.internalPointer());
-			item->setKey(value.toString());
+			item->setKey(unboxedValue);
 			emit dataChanged(index, index, { Qt::EditRole });
 			return true;
 		}
 		if (col == kValueColumn) {
 			QJsonTreeItem* item =
 			    static_cast<QJsonTreeItem*>(index.internalPointer());
-			item->setValue(value);
+			item->setValue(data);
 			emit dataChanged(index, index, { Qt::EditRole });
 			return true;
 		}
 	}
-
 	return false;
 }
 
