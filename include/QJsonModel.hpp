@@ -45,31 +45,35 @@ class QJsonModel : public QAbstractItemModel {
     public:
 	// clang-format off
 	enum FieldPermissions : unsigned char {
-		ReadOnly      = 0b0000,
-		WritableValue = 0b0001,
-		WritableKey   = 0b0010
-	}; // clang-format on
+		kReadOnly      = 0b0000,
+		kWritableValue = 0b0001,
+		kWritableKey   = 0b0010
+	};
+	enum ErrorFlag : bool {
+		kSuccess = false,
+		kError = true,
+	};
+	// clang-format on
 
 	explicit QJsonModel(
 	    QObject* parent = nullptr,
-	    FieldPermissions permissions = WritableValue
+	    FieldPermissions permissions = kWritableValue
 	);
 	QJsonModel(
 	    const QString& fileName, QObject* parent = nullptr,
-	    FieldPermissions permissions = WritableValue
+	    FieldPermissions permissions = kWritableValue
 	);
 	QJsonModel(
 	    QIODevice* device, QObject* parent = nullptr,
-	    FieldPermissions permissions = WritableValue
+	    FieldPermissions permissions = kWritableValue
 	);
 	QJsonModel(
 	    const QByteArray& json, QObject* parent = nullptr,
-	    FieldPermissions permissions = WritableValue
+	    FieldPermissions permissions = kWritableValue
 	);
 
 	~QJsonModel() override;
 
-	using ErrorFlag = bool;
 	ErrorFlag load(const QString& fileName);
 	ErrorFlag load(QIODevice* file);
 	ErrorFlag loadJson(const QByteArray& json);
