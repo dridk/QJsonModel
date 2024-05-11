@@ -13,7 +13,7 @@ disable_tests_if_subproject()
 #git_setup_submodules()
 
 project(QJsonModel
-	VERSION 0.0.6
+	VERSION 0.0.7
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
