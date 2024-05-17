@@ -1,0 +1,3 @@
+[submodule "CMake"]
+	path = CMake
+	url = https://gitea.beniquez.me/sdaveb/CmakeTools.git

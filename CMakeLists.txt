@@ -4,23 +4,17 @@ cmake_minimum_required(VERSION 3.26)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(BuildProperties)
-
-prevent_in_source_build()
-disable_deprecated_features()
-# When this package is included as a subproject, there's no need to
-# build and run the unit-tests.
-disable_tests_if_subproject()
-#git_setup_submodules()
+include(BuildOptions)
 
 project(QJsonModel
-	VERSION 0.0.7
+	VERSION 0.0.8
 	LANGUAGES C CXX
 	# Save this for later:
 	# HOMEPAGE_URL <URL>
 	DESCRIPTION "QJsonModel is a json tree model class for Qt6/C++17 based on QAbstractItemModel. MIT License."
 )
 
-detect_linkers()
+check_and_set_linker()
 
 include(CPM)
 
