@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.26)
 # Additional paths to search for custom and third-party CMake modules
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
+include(DefaultConfig)
 include(BuildProperties)
-include(BuildOptions)
 
 project(QJsonModel
 	VERSION 0.0.8
@@ -43,7 +43,7 @@ find_package(Qt6 COMPONENTS
 qt_standard_project_setup()
 
 # Set output directories for build targets
-#set_artifact_dir(${CMAKE_BINARY_DIR}/out)
+set_artifact_dir(${CMAKE_BINARY_DIR}/out)
 
 include(CheckIncludeFile)
 
@@ -64,15 +64,14 @@ set_target_properties(QJsonModel PROPERTIES
 	POSITION_INDEPENDENT_CODE ON
 )
 
-set(QJsonModel_PUBLIC_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
-#file(MAKE_DIRECTORY ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
-add_custom_target(QJsonModel_copy_include_files
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${QJsonModel_TOP_SOURCE_DIR}/include ${QJsonModel_PUBLIC_INCLUDE_DIR}
-	DEPENDS ${QJsonModel_TOP_SOURCE_DIR}/include
-	COMMENT "Copying include files to ${QJsonModel_PUBLIC_INCLUDE_DIR}"
+package_library_headers(QJsonModel
+	GLOB ${QJsonModel_TOP_SOURCE_DIR}/include/*.hpp
+	${QJsonModel_TOP_SOURCE_DIR}/include/details
 )
-add_dependencies(QJsonModel QJsonModel_copy_include_files)
+
+target_include_directories(QJsonModel PRIVATE ${QJsonModel_INCLUDE_OUTPUT_DIR}/QJsonModel)
+target_include_directories(QJsonModel PUBLIC ${QJsonModel_INCLUDE_OUTPUT_DIR})
 
 # Manually call moc on all header files
 file(GLOB_RECURSE QJsonModel_HEADER_FILES
