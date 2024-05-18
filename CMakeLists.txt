@@ -66,12 +66,11 @@ set_target_properties(QJsonModel PROPERTIES
 
 
 package_library_headers(QJsonModel
-	GLOB ${QJsonModel_TOP_SOURCE_DIR}/include/*.hpp
-	${QJsonModel_TOP_SOURCE_DIR}/include/details
+	${QJsonModel_TOP_SOURCE_DIR}/include
 )
 
-target_include_directories(QJsonModel PRIVATE ${QJsonModel_INCLUDE_OUTPUT_DIR}/QJsonModel)
-target_include_directories(QJsonModel PUBLIC ${QJsonModel_INCLUDE_OUTPUT_DIR})
+target_include_directories(QJsonModel PRIVATE ${QJsonModel_TOP_SOURCE_DIR}/include)
+target_include_directories(QJsonModel INTERFACE ${QJsonModel_INCLUDE_OUTPUT_DIR})
 
 # Manually call moc on all header files
 file(GLOB_RECURSE QJsonModel_HEADER_FILES
@@ -91,7 +90,6 @@ PUBLIC
 	Qt6::Gui
 	Qt6::Widgets
 )
-
 target_include_directories(QJsonModel PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
 add_library(QJsonModelStatic STATIC)
@@ -105,6 +103,8 @@ set_target_properties(QJsonModelShared PROPERTIES OUTPUT_NAME "QJsonModel")
 target_link_libraries(QJsonModelStatic PRIVATE QJsonModel)
 target_link_libraries(QJsonModelShared PRIVATE QJsonModel)
 
+target_include_directories(QJsonModelStatic INTERFACE ${QJsonModel_INCLUDE_OUTPUT_DIR})
+target_include_directories(QJsonModelShared INTERFACE ${QJsonModel_INCLUDE_OUTPUT_DIR})
 #target_include_directories(QJsonModelStatic PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
 #target_include_directories(QJsonModelShared  PUBLIC ${QJsonModel_PUBLIC_INCLUDE_DIR})
 
