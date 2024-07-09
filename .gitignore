@@ -1,32 +1,155 @@
-# Compiled Object files
-*.slo
-*.lo
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Folder config file commonly created by Windows Explorer
+Desktop.ini
+
+# Recycle Bin used on file shares and remote volumes
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Thumbnail cache files created by Windows
+Thumbs.db
+Thumbs.db:encryptable
+
+# Windows Desktop Search
+*.pst
+*.ost
+*.log
+
+# Compiled Object files, Static and Dynamic libs
 *.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
+*.lo
 *.la
 *.a
+*.class
+*.so
 *.lib
-
-# Executables
+*.dll
 *.exe
-*.out
-*.app
 
-# Qt 
-*.pro.user 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
+# Java
+*.class
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IntelliJ
+.idea/
+
+# Visual Studio Code
+.vscode/
+.vscodium/
+
+# Node.js
+node_modules/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Thumbnails
+Thumbs/
+Thumbs.db
+
+# macOS metadata
+._*
+
+# TextMate
+*.tmproj
+*.tmproject
+.tmtags
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# VS Code directories
+.vscode/
+
+# CodeKit
+.codekit-config.json
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.xml
+
+# Binary and source packages
+*.dmg
+*.gz
+*.iso
+*.jar
+*.tar
+*.zip
+*.rar
+*.bin
+*.war
+*.ear
+*.sar
+*.bbl
+*.pdf
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# Virtual environment
+venv/
+env/
+
+### Manually Entered
+vim-debug/
+**/out/bin
+**/out/lib
+**/out/share
+_deps
+.cache/
+compile_commands.json
+*.bak
+docs/
+*.old
+
+# clangd cache
+.cache/
+.vim/
+build/
+debug/
+realease/
+Release/
+Debug
