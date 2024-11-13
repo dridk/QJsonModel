@@ -20,7 +20,11 @@ target_include_directories(QJsonModel PUBLIC include)
 
 add_library(QJsonModelStatic STATIC)
 add_library(Qt6::QJsonModelStatic ALIAS QJsonModelStatic)
-set_target_properties(QJsonModelStatic PROPERTIES OUTPUT_NAME "QJsonModel")
+if(WIN32)
+  set_target_properties(QJsonModelStatic PROPERTIES OUTPUT_NAME "QJsonModelLIB")
+else()
+  set_target_properties(QJsonModelStatic PROPERTIES OUTPUT_NAME "QJsonModel")
+endif()
 target_link_libraries(QJsonModelStatic PUBLIC QJsonModel)
 
 add_library(QJsonModelShared SHARED)
