@@ -6,7 +6,7 @@ QJsonModel was originally written by Sacha Shutz (https://github.com/dridk).
 This fork is also released under the MIT License.
 
 
-![QJsonModel](blob:https://github.com/077944fb-e624-4819-b9cb-cb92610bc312)
+![QJsonModel](https://raw.githubusercontent.com/dridk/QJsonModel/refs/heads/master/screen.png)
 
 ## Build Instructions
 
