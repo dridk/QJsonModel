@@ -1,10 +1,6 @@
 # QJsonModel
 QJsonModel is a JSON tree model class for Qt6/C++17 based on QAbstractItemModel.
 
-QJsonModel was originally written by Sacha Shutz (https://github.com/dridk).
-
-This fork is also released under the MIT License.
-
 
 ![QJsonModel](https://raw.githubusercontent.com/dridk/QJsonModel/refs/heads/master/screen.png)
 
