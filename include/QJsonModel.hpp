@@ -105,10 +105,14 @@ public:
   //! List of tags to skip during JSON parsing
   void addException(const QStringList &exceptions);
 
+  // Display format control
+  void setQuoteVisible(bool visible);
+  bool quoteVisible() const;
 private:
   QJsonValue genJson(QJsonTreeItem *) const;
   QJsonTreeItem *mRootItem = nullptr;
   QStringList mHeaders;
+  bool mQuoteVisible = false;
   //! List of exceptions (e.g. comments). Case insensitive, compairs on
   //! "contains".
   QStringList mExceptions;

@@ -253,8 +253,13 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const {
     if (index.column() == 0)
       return QString("%1").arg(item->key());
 
-    if (index.column() == 1)
+    if (index.column() == 1) {
+      if (mQuoteVisible && item->type() == QJsonValue::String) {
+        QString value = item->value().toString();
+        return QString("\"%1\"").arg(value);
+      }
       return item->value();
+    }
   } else if (Qt::EditRole == role) {
     if (index.column() == 1)
       return item->value();
@@ -467,6 +472,14 @@ void QJsonModel::valueToJson(QJsonValue jsonValue, QByteArray &json, int indent,
 
 void QJsonModel::addException(const QStringList &exceptions) {
   mExceptions = exceptions;
+}
+
+void QJsonModel::setQuoteVisible(bool visible) {
+  mQuoteVisible = visible;
+}
+
+bool QJsonModel::quoteVisible() const {
+  return mQuoteVisible;
 }
 
 QJsonValue QJsonModel::genJson(QJsonTreeItem *item) const {
